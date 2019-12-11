@@ -17,8 +17,10 @@
 
 (def plate-thickness 4) ; was 4
 
-(def keyswitch-height 14.4) ;; Was 14.1, then 14.25
-(def keyswitch-width 14.4)
+(def keyswitch-height 13) ;; Was 14.1, then 14.25
+(def keyswitch-width 15.6)
+(def keyswitch-notch-width 15.5)
+(def keyswitch-notch-height 1)
 
 (def key-height 10.4) ; was 12.7, then 10.4
 (def dsa-profile-key-height 7.4)
@@ -43,7 +45,7 @@
                                  (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
                                              0
                                              (/ plate-thickness 2)]))))
-        plate-half (union top-wall left-wall (with-fn 100 side-nub))]
+        plate-half (union top-wall left-wall)]
     (union plate-half
            (->> plate-half
                 (mirror [1 0 0])
@@ -117,10 +119,6 @@
         column-row-offset (cond
                         (= column 2) [0 2.4 -4.5]
                         (= column 4) [0 -5.8 5.64]
-                        (and (= column 5) (not= row 4)) [5.2 -5.8 7.01]
-                        (and (= column 5) (= row 4)) [0.5 -5.8 5.7]
-                        (and (= column 6) (= row 4)) [8.9 -5.8 8] ; extended connector
-                        (= column 6) [9 -5.8 8] ; extended connector
                         :else [0 0 0])
         column-angle (* β (- 2 column))
         placed-shape (->> row-placed-shape
@@ -130,7 +128,7 @@
                           (translate column-row-offset))]
     (->> placed-shape
          (rotate (/ π 12) [0 1 0])
-         (translate [0 0 14.5]))))
+         (translate [0 0 13]))))
 
 (defn case-place [column row shape]
   (let [row-placed-shape (->> shape
@@ -305,16 +303,16 @@
          (translate [-52 -45 40]))))
 
 (defn thumb-2x-column [shape]
-  (thumb-place 0 -1/2 shape))
+  (thumb-place 0 -1/2 (rotate (/ π 2) [0 0 1]shape)))
 
 (defn thumb-2x+1-column [shape]
-  (union (thumb-place 1 -1/2 shape)
-         (thumb-place 1 1 shape)))
+  (union (thumb-place 1 -1/2 (rotate (/ π 2) [0 0 1]shape)))
+         (thumb-place 1 1 (rotate (/ π 1) [0 0 1]shape)))
 
 (defn thumb-1x-column [shape]
-  (union (thumb-place 2 -1 shape)
-         (thumb-place 2 0 shape)
-         (thumb-place 2 1 shape)))
+  (union (thumb-place 2 -1 (rotate (/ π 1) [0 0 1]shape))
+         (thumb-place 2 0 (rotate (/ π 1) [0 0 1]shape))
+         (thumb-place 2 1 (rotate (/ π 1) [0 0 1]shape))))
 
 (defn thumb-layout [shape]
   (union
@@ -328,13 +326,7 @@
                        (translate [0 (/ (+ plate-height mount-height) 2)
                                    (- plate-thickness (/ web-thickness 2))]))
         ; Costar or WASD stabilizers
-        stabilizer-cutout (union (->> (cube 14.2 3.5 web-thickness)
-                                      (translate [0.5 12 (- plate-thickness (/ web-thickness 2))])
-                                      (color [1 0 0 1/2]))
-                                 (->> (cube 16 3.5 web-thickness)
-                                      (translate [0.5 12 (- plate-thickness (/ web-thickness 2) 1.4)])
-                                      (color [1 0 0 1/2])))
-        top-plate (difference top-plate stabilizer-cutout)]
+]
     (union top-plate (mirror [0 1 0] top-plate))))
 
 (def thumbcaps
@@ -426,7 +418,7 @@
 (def thumb
   (union
    thumb-connectors
-   (thumb-layout (rotate (/ π 2) [0 0 1] single-plate))
+   (thumb-layout single-plate)
    (thumb-place 0 -1/2 double-plates)
    (thumb-place 1 -1/2 double-plates)))
 
@@ -435,7 +427,7 @@
 ;;;;;;;;;;
 
 ;; In column units
-(def right-wall-column (+ (last columns) 1.1))
+(def right-wall-column (+ (last columns) 0.55))
 (def left-wall-column (- (first columns) 1/2))
 (def thumb-back-y 0.93)
 (def thumb-case-z 3)
@@ -576,7 +568,7 @@
                            (key-place (- x 1) 0 web-post-tr))))))
 
          (hull (place (- 5 1/2) 0 (translate [0 -1 1] wall-cube-bottom-back))
-               (place 5 0 (translate [0 -0.91 1.32] wall-cube-bottom-back))
+               
                (key-place 4 0 web-post-tr)
                (key-place 5 0 web-post-tl)))
       (union case-back-cutout
@@ -854,39 +846,39 @@
          front-wall (concat
                      (for [x (range 2 5)]
                        (union
-                        (hull (bottom-place (- x 1/2) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
-                              (bottom-place (+ x 1/2) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
+                        (hull (bottom-place (- x 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
+                              (bottom-place (+ x 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
                               (key-place x 4 half-post-bl)
                               (key-place x 4 half-post-br))
-                        (hull (bottom-place (- x 1/2) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
+                        (hull (bottom-place (- x 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
                               (key-place x 4 half-post-bl)
                               (key-place (- x 1) 4 half-post-br))))
-                     [(hull (bottom-place right-wall-column 4 (translate [right-offset front-offset 1] wall-cube-bottom-front))
-                            (bottom-place (- right-wall-column 1) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
+                     [(hull (bottom-place right-wall-column 4 (translate [0 1 1] wall-cube-bottom-front))
+                            (bottom-place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
                             (key-place 5 4 half-post-bl)
                             (key-place 5 4 half-post-br))
-                      (hull (bottom-place (+ 4 1/2) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
-                            (bottom-place (- right-wall-column 1) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
+                      (hull (bottom-place (+ 4 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
+                            (bottom-place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
                             (key-place 4 4 half-post-br)
                             (key-place 5 4 half-post-bl))])
          right-wall (concat
                      (for [x (range 0 4)]
-                       (hull (bottom-place right-wall-column x (translate [right-offset 0 1] (wall-cube-bottom 1/2)))
+                       (hull (bottom-place right-wall-column x (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (key-place 5 x web-post-br)
                              (key-place 5 x web-post-tr)))
                      (for [x (range 0 4)]
-                       (hull (bottom-place right-wall-column x (translate [right-offset 0 1] (wall-cube-bottom 1/2)))
-                             (bottom-place right-wall-column (inc x) (translate [right-offset 0 1] (wall-cube-bottom 1/2)))
+                       (hull (bottom-place right-wall-column x (translate [-1 0 1] (wall-cube-bottom 1/2)))
+                             (bottom-place right-wall-column (inc x) (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (key-place 5 x web-post-br)
                              (key-place 5 (inc x) web-post-tr)))
                      [(union
-                       (hull (bottom-place right-wall-column 0 (translate [right-offset 0 1] (wall-cube-bottom 1/2)))
-                             (bottom-place right-wall-column 0.017 (translate [(- right-offset 0.29) -1 1.15] (wall-cube-bottom 1)))
+                       (hull (bottom-place right-wall-column 0 (translate [-1 0 1] (wall-cube-bottom 1/2)))
+                             (bottom-place right-wall-column 0.017 (translate [-1 -1 1.15] (wall-cube-bottom 1)))
                              (key-place 5 0 web-post-tr))
-                       (hull (bottom-place right-wall-column 4 (translate [right-offset 0 1] (wall-cube-bottom 1/2)))
-                             (bottom-place right-wall-column 4 (translate [right-offset front-offset 1] (wall-cube-bottom 0)))
+                       (hull (bottom-place right-wall-column 4 (translate [0 0 1] (wall-cube-bottom 1/2)))
+                             (bottom-place right-wall-column 4 (translate [0 1 1] (wall-cube-bottom 0)))
                              (key-place 5 4 half-post-br))
-                       (hull (bottom-place right-wall-column 4 (translate [right-offset 0 1] (wall-cube-bottom 1/2)))
+                       (hull (bottom-place right-wall-column 4 (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (key-place 5 4 half-post-br)
                              (key-place 5 4 web-post-tr)))])
          back-wall (concat
