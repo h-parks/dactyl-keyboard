@@ -11,6 +11,8 @@
 (def ^:const RESTS_SEPERATE false)
 (def ^:const STANDS_SEPERATE false)
 
+(def additional-thumb-x-offset -1)  				;;additional offset for thumb cluster-0 by default
+
 ;;;;;;;;;;;;;;;;;
 ;; Switch Hole ;;
 ;;;;;;;;;;;;;;;;;
@@ -38,13 +40,6 @@
                        (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
                                    0
                                    (/ plate-thickness 2)]))
-        side-nub (->> (binding [*fn* 30] (cylinder 1 2.75)) ; spec says 5.7
-                      (rotate (/ π 2) [1 0 0])
-                      (translate [(+ (/ keyswitch-width 2)) 0 1])
-                      (hull (->> (cube 1.5 2.75 plate-thickness)
-                                 (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
-                                             0
-                                             (/ plate-thickness 2)]))))
         plate-half (union top-wall left-wall)]
     (union plate-half
            (->> plate-half
@@ -118,7 +113,7 @@
                               (translate [0 0 row-radius]))
         column-row-offset (cond
                         (= column 2) [0 2.4 -4.5]
-                        (= column 4) [0 -5.8 5.64]
+                        (>= column 4) [0 -5.8 5.64]
                         :else [0 0 0])
         column-angle (* β (- 2 column))
         placed-shape (->> row-placed-shape
@@ -192,7 +187,7 @@
                row rows
                :when (or (not= column 0)
                          (not= row 4))]
-           (->> (sa-cap (if (and (= column 5) (not= row 4)) 1.5 1))
+           (->> (sa-cap (if (and (= column 5) (not= row 4)) 1 1))
                 (key-place column row)))))
 
 (defn prism [w l h taper-1 taper-2]
@@ -225,7 +220,6 @@
 (def web-post (->> (cube post-size post-size web-thickness)
                    (translate [0 0 (+ (/ web-thickness -2)
                                       plate-thickness)])))
-
 (def post-adj (/ post-size 2))
 (def web-post-tr (translate [(- (/ mount-width 2) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
 (def web-post-tl (translate [(+ (/ mount-width -2) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
@@ -286,10 +280,7 @@
         β (/ π 36)
         column-radius (+ (/ (/ (+ mount-width 2) 2)
                             (Math/sin (/ β 2)))
-                         cap-top-height)
-        #_(+ (/ (/ (+ pillar-width 5) 2)
-                            (Math/sin (/ β 2)))
-                         cap-top-height)]
+                         cap-top-height) ]
     (->> shape
          (translate [0 0 (- row-radius)])
          (rotate (* α row) [1 0 0])
@@ -300,19 +291,20 @@
          (translate [mount-width 0 0])
          (rotate (* π (- 1/4 3/16)) [0 0 1])
          (rotate (/ π 12) [1 1 0])
-         (translate [-52 -45 40]))))
+         (translate [(+ -52 additional-thumb-x-offset) -45 40]))))
 
 (defn thumb-2x-column [shape]
-  (thumb-place 0 -1/2 (rotate (/ π 2) [0 0 1]shape)))
+  (union (thumb-place 0 -1/2 (rotate (/ π 2) [0 0 1] shape))
+         (thumb-place 1 -1/2 (rotate (/ π 2) [0 0 1] shape))))
 
 (defn thumb-2x+1-column [shape]
-  (union (thumb-place 1 -1/2 (rotate (/ π 2) [0 0 1]shape)))
-         (thumb-place 1 1 (rotate (/ π 1) [0 0 1]shape)))
+  (union #_(thumb-place 1 -1/2 (rotate (/ π 2) [0 0 1] shape)))
+         (thumb-place 1 1 (rotate (/ π 1) [0 0 1] shape)))
 
 (defn thumb-1x-column [shape]
-  (union (thumb-place 2 -1 (rotate (/ π 1) [0 0 1]shape))
-         (thumb-place 2 0 (rotate (/ π 1) [0 0 1]shape))
-         (thumb-place 2 1 (rotate (/ π 1) [0 0 1]shape))))
+  (union (thumb-place 2 -1 (rotate (/ π 1) [0 0 1] shape))
+         (thumb-place 2 0 (rotate (/ π 1) [0 0 1] shape))
+         (thumb-place 2 1 (rotate (/ π 1) [0 0 1] shape))))
 
 (defn thumb-layout [shape]
   (union
@@ -322,17 +314,22 @@
 
 (def double-plates
   (let [plate-height (/ (- sa-double-length mount-height) 2)
-        top-plate (->> (cube mount-width plate-height web-thickness)
+        top-plate (->> (cube mount-height plate-height web-thickness)
                        (translate [0 (/ (+ plate-height mount-height) 2)
                                    (- plate-thickness (/ web-thickness 2))]))
-        ; Costar or WASD stabilizers
-]
-    (union top-plate (mirror [0 1 0] top-plate))))
+      right-side-plate (->> (cube 3.4 (* 3.5 plate-height ) web-thickness)
+                      (translate [9 0 (- plate-thickness (/ web-thickness 2))]))
+      left-side-plate (->> (cube 3.4 (* 3.5 plate-height ) web-thickness)
+                      (translate [-9 0 (- plate-thickness (/ web-thickness 2))]))]
+    (union top-plate
+           (mirror [0 1 0] top-plate)
+           right-side-plate
+           left-side-plate)))
 
 (def thumbcaps
   (union
-   (thumb-2x-column (sa-cap 2))
-   (thumb-place 1 -1/2 (sa-cap 2))
+   (thumb-2x-column (sa-cap 1))
+   (thumb-place 1 -1/2 (sa-cap 1))
    (thumb-place 1 1 (sa-cap 1))
    (thumb-1x-column (sa-cap 1))))
 
@@ -531,7 +528,7 @@
            (place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
            (key-place 4 4 web-post-br)
            (key-place 5 4 web-post-bl))
-     (hull (place 0.75 4 (translate [0 1.73 -0.805] wall-cube-bottom-front))
+     (hull (place 0.75 4 (translate [1 1.73 -0.805] wall-cube-bottom-front))
            (place 1.5 4 (translate [0 1 1] wall-cube-bottom-front))
            (key-place 1 4 (translate [0.001 0 0] web-post-bl))
            (key-place 1 4 (translate [0.001 0 0] web-post-br))))))
@@ -554,7 +551,7 @@
            (hull (place 5 0 (translate [0 -0.91 1.32] wall-cube-bottom-back))
                  (place right-wall-column 0 (translate [-1.2 -1.52 0.91] wall-cube-bottom-back))
                  (key-place 5 0 web-post-tl)
-                 (key-place 5 0 (translate [5.6 0 0.05] web-post-tr)))
+                 (key-place 5 0 (translate [1.95 0 0.05] web-post-tr)))
 
            (apply union
                   (for [x (range 1 5)]
@@ -568,7 +565,7 @@
                            (key-place (- x 1) 0 web-post-tr))))))
 
          (hull (place (- 5 1/2) 0 (translate [0 -1 1] wall-cube-bottom-back))
-               
+               (place 5 0 (translate [0 -0.91 1.32] wall-cube-bottom-back))               
                (key-place 4 0 web-post-tr)
                (key-place 5 0 web-post-tl)))
       (union case-back-cutout
@@ -718,11 +715,11 @@
                        (translate [13.6 -15 -8]))
         thumb-top (->> (cube 1 1 1)
                        (translate [13 -11.7 -5.4]))]
-     (hull (place thumb-right-wall wall (translate [-1 1.5 thumb-case-z] wall-cube-bottom-front))
+     (hull (place thumb-right-wall wall (translate [0 1.5 thumb-case-z] wall-cube-bottom-front))
            (key-place 1 4 web-post-bl)
            (place 0 -1/2 thumb-br)
-           (case-place 0 4 thumb-top)
-           (case-place 0 4 (translate [-1 10 0] thumb-bottom)))))
+           #_(case-place 0 4 thumb-top)
+           (case-place 0 4 (translate [0 10 0] thumb-bottom)))))
 
 (def new-case
     (union front-wall
@@ -779,7 +776,9 @@
                           (not= row 4))]
             (->> bottom-key-guard
                  (key-place column row))))
-   (thumb-layout (rotate (/ π 2) [0 0 1] bottom-key-guard))
+   (thumb-1x-column (rotate (/ π 1) [0 0 1] bottom-key-guard))
+   (thumb-2x-column (rotate (/ π 2) [0 0 1] bottom-key-guard))
+   (thumb-place 1 1 (rotate (/ π 1) [0 0 1] bottom-key-guard))
    (apply union
           (for [column columns
                 row [(last rows)] ;;
@@ -887,7 +886,7 @@
                        (hull
                              (do (bottom-place (- x 1/2) 0 (translate [0 back-offset 1] wall-cube-bottom-back)))
                               (if (= x 5)
-                               (do (bottom-place (+ x 1/2) 0 (translate [10.6 (- back-offset 0.35) 1.30] wall-cube-bottom-back)))
+                               (do (bottom-place (+ x 1/2) 0 (translate [0 back-offset 1] wall-cube-bottom-back)))
                                (do (bottom-place (+ x 1/2) 0 (translate [0 back-offset 1] wall-cube-bottom-back))))
                              (key-place x 0 web-post-tl)
                              (key-place x 0 web-post-tr))
@@ -1160,9 +1159,9 @@
 (def io-exp-height 8)
 (def io-exp-length 36)
 
-(def teensy-width 20)
+(def teensy-width 21)
 (def teensy-height 12)
-(def teensy-length 33)
+(def teensy-length 35)
 
 (def io-exp-cover (circuit-cover io-exp-width io-exp-length io-exp-height))
 (def teensy-cover (circuit-cover teensy-width teensy-length teensy-height))
@@ -1546,10 +1545,10 @@
     (union
       (difference
         (union key-holes
-              connectors
-              thumb
-              new-case
-              teensy-support)
+               connectors
+               thumb
+               new-case
+               teensy-support)
       trrs-hole-just-circle
       screw-holes))))
 
@@ -1572,21 +1571,27 @@
 (spit "things/dactyl-top-right.scad"
       (write-scad dactyl-top-right))
 
+
 (spit "things/dactyl-bottom-right.scad"
       (write-scad dactyl-bottom-right))
+
 
 (spit "things/dactyl-top-left.scad"
       (write-scad dactyl-top-left))
 
+
 (spit "things/dactyl-bottom-left.scad"
       (write-scad dactyl-bottom-left))
+
 
 (spit "things/dactyl-keycaps-left.scad"
       (write-scad dactyl-keycaps-left))
 
+#_
 (spit "things/dactyl-keycaps-right.scad"
       (write-scad dactyl-keycaps-right))
 
+#_
 (if RESTS_SEPERATE
   (do
     (spit "things/dactyl-rest-left.scad"
@@ -1595,6 +1600,7 @@
     (spit "things/dactyl-rest-right.scad"
           (write-scad dactyl-rest-right))))
 
+#_
 (if STANDS_SEPERATE
   (do
    (spit "things/dactyl-stands-left.scad"
