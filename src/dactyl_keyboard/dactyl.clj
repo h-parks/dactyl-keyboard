@@ -24,22 +24,28 @@
 (def keyswitch-notch-width 15.5)
 (def keyswitch-notch-height 1)
 
-(def key-height 10.4) ; was 12.7, then 10.4
+(def key-height 7.4) ; was 12.7, then 10.4
 (def dsa-profile-key-height 7.4)
-(def key-z (+ plate-thickness 3)) ; 3 is pressed, 7 is released
+(def key-z (+ plate-thickness 6)) ; 3 is pressed, 7 is released
 
 (def mount-width (+ keyswitch-width 3))
-(def mount-height (+ keyswitch-height 3))
+(def mount-height (+ keyswitch-height 4.8))
 
 (def single-plate
-  (let [top-wall (->> (cube (+ keyswitch-width 3) 1.5 plate-thickness)
+  (let [top-wall (->> (cube (+ keyswitch-width 3) 2.4 plate-thickness)
                       (translate [0
-                                  (+ (/ 1.5 2) (/ keyswitch-height 2))
+                                  (+ (/ 2.8 2) (/ keyswitch-height 2))
                                   (/ plate-thickness 2)]))
-        left-wall (->> (cube 1.5 (+ keyswitch-height 3) plate-thickness)
-                       (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
-                                   0
-                                   (/ plate-thickness 2)]))
+        left-wall (union (->> (cube 1.5 (+ keyswitch-height 4.8) plate-thickness)
+                              (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
+                                          0
+                                          (/ plate-thickness 2)]))
+                         (->> (cube 1.5 (+ keyswitch-height 4.8) 1.0)
+                              (translate [(+ (/ 1.5 2) (/ keyswitch-notch-width 2))
+                                          0
+                                          (- plate-thickness
+                                             (/ keyswitch-notch-height 2))]))
+                         )
         plate-half (union top-wall left-wall)]
     (union plate-half
            (->> plate-half
@@ -50,7 +56,7 @@
 ;; SA Keycaps ;;
 ;;;;;;;;;;;;;;;;
 
-(def sa-length 18.5)
+(def sa-length 18)
 (def sa-double-length 37.5)
 (def sa-cap {1 (let [bl2 (/ sa-length 2)
                      m (/ dsa-profile-key-height 2)
@@ -62,18 +68,18 @@
                                         (translate [0 0 6]))
                                    (->> (polygon [[6 6] [6 -6] [-6 -6] [-6 6]])
                                         (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 dsa-profile-key-height])))]
+                                        (translate [0 0 key-height])))]
                  (->> key-cap
                       (translate [0 0 key-z])
                       (color [220/255 163/255 163/255 1])))
              2 (let [bl2 (/ sa-double-length 2)
-                     bw2 (/ 18.25 2)
+                     bw2 (/ 18 2)
                      key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
                                         (extrude-linear {:height 0.1 :twist 0 :convexity 0})
                                         (translate [0 0 0.05]))
                                    (->> (polygon [[6 16] [6 -16] [-6 -16] [-6 16]])
                                         (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 dsa-profile-key-height])))]
+                                        (translate [0 0 key-height])))]
                  (->> key-cap
                       (translate [0 0 key-z])
                       (color [127/255 159/255 127/255 1])))
@@ -84,9 +90,9 @@
                                           (translate [0 0 0.05]))
                                      (->> (polygon [[11 6] [-11 6] [-11 -6] [11 -6]])
                                           (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                          (translate [0 0 dsa-profile-key-height])))]
+                                          (translate [0 0 key-height])))]
                    (->> key-cap
-                        (translate [0 0 key-z])
+                        (translate [0 0 (+ 6 plate-thickness)])
                         (color [240/255 223/255 175/255 1])))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -112,8 +118,9 @@
                               (rotate (* α (- 2 row)) [1 0 0])
                               (translate [0 0 row-radius]))
         column-row-offset (cond
-                        (= column 2) [0 2.4 -4.5]
-                        (>= column 4) [0 -5.8 5.64]
+		                        (<= column 1) [0 -1.5 0] ;;was moved -4.5
+                        (= column 2) [0 2.82 -4.5]
+                        (>= column 4) [0 -6.3 5.64]
                         :else [0 0 0])
         column-angle (* β (- 2 column))
         placed-shape (->> row-placed-shape
@@ -274,11 +281,11 @@
 (defn thumb-place [column row shape]
   (let [cap-top-height (+ plate-thickness key-height)
         α (/ π 12)
-        row-radius (+ (/ (/ (+ mount-height 1) 2)
+        row-radius (+ (/ (/ (+ mount-height 0.75) 2)
                          (Math/sin (/ α 2)))
                       cap-top-height)
         β (/ π 36)
-        column-radius (+ (/ (/ (+ mount-width 2) 2)
+        column-radius (+ (/ (/ (+ mount-width 1) 2)
                             (Math/sin (/ β 2)))
                          cap-top-height) ]
     (->> shape
@@ -314,13 +321,31 @@
 
 (def double-plates
   (let [plate-height (/ (- sa-double-length mount-height) 2)
-        top-plate (->> (cube mount-height plate-height web-thickness)
+        top-plate (->> (cube (+ 3.6 mount-height) plate-height web-thickness)
                        (translate [0 (/ (+ plate-height mount-height) 2)
                                    (- plate-thickness (/ web-thickness 2))]))
+
+        stabilizer-cutout (union (->> (cube 5.1 2.6 web-thickness)
+                                      (translate [-6.9 13.75 (- plate-thickness (/ web-thickness 2.1))])
+                                      (color [1 0 0 1/2]))
+                                 (->> (cube 6.9 2.6 web-thickness)
+                                      (translate [-6.9 13.75 (- plate-thickness (/ web-thickness 2.01) 1.4)])
+                                      (color [1 0 0 1/2]))
+(->> (cube 5.1 2.6 web-thickness)
+                                      (translate [-6.9 -13.75 (- plate-thickness (/ web-thickness 2.1))])
+                                      (color [1 0 0 1/2]))
+                                 (->> (cube 6.9 2.6 web-thickness)
+                                      (translate [-6.9 -13.75 (- plate-thickness (/ web-thickness 2.01) 1.4)])
+                                      (color [1 0 0 1/2]))									  
+									  )
+        top-plate (difference top-plate stabilizer-cutout)
       right-side-plate (->> (cube 3.4 (* 3.5 plate-height ) web-thickness)
                       (translate [9 0 (- plate-thickness (/ web-thickness 2))]))
       left-side-plate (->> (cube 3.4 (* 3.5 plate-height ) web-thickness)
-                      (translate [-9 0 (- plate-thickness (/ web-thickness 2))]))]
+                      (translate [-9 0 (- plate-thickness (/ web-thickness 2))]))
+					right-side-plate (difference right-side-plate stabilizer-cutout)
+left-side-plate (difference left-side-plate stabilizer-cutout)					]
+
     (union top-plate
            (mirror [0 1 0] top-plate)
            right-side-plate
@@ -328,8 +353,8 @@
 
 (def thumbcaps
   (union
-   (thumb-2x-column (sa-cap 1))
-   (thumb-place 1 -1/2 (sa-cap 1))
+   (thumb-place 0 -1/2 (sa-cap 2))
+   (thumb-place 1 -1/2 (sa-cap 2))
    (thumb-place 1 1 (sa-cap 1))
    (thumb-1x-column (sa-cap 1))))
 
@@ -356,14 +381,23 @@
          thumb-tr (->> web-post-tr
                        (translate [0 plate-height 0]))
          thumb-br (->> web-post-br
-                       (translate [0 (- plate-height) 0]))]
+                       (translate [0 (- plate-height) 0]))
+		 thumb-tl2 (->> web-post-tl
+                       (translate [-1 plate-height 0]))
+         thumb-bl2 (->> web-post-bl
+                       (translate [-1 (- plate-height) 0]))
+         thumb-tr2 (->> web-post-tr
+                       (translate [-1 plate-height 0]))
+         thumb-br2 (->> web-post-br
+                       (translate [-1 (- plate-height) 0]))			   
+					   ]
      (union
 
       ;;Connecting the two doubles
-      (triangle-hulls (thumb-place 0 -1/2 thumb-tl)
-                      (thumb-place 0 -1/2 thumb-bl)
-                      (thumb-place 1 -1/2 thumb-tr)
-                      (thumb-place 1 -1/2 thumb-br))
+      (triangle-hulls (thumb-place 0 -1/2 thumb-tl2)
+                      (thumb-place 0 -1/2 thumb-bl2)
+                      (thumb-place 1 -1/2 thumb-tr2)
+                      (thumb-place 1 -1/2 thumb-br2))
 
       ;;Connecting the double to the one above it
       (triangle-hulls (thumb-place 1 -1/2 thumb-tr)
@@ -378,14 +412,14 @@
                       (thumb-place 2 0 web-post-tr))
 
       ;;Connecting the two singles with the middle double
-      (hull (thumb-place 1 -1/2 thumb-tl)
-            (thumb-place 1 -1/2 thumb-bl)
+      (hull (thumb-place 1 -1/2 thumb-tl2)
+            (thumb-place 1 -1/2 thumb-bl2)
             (thumb-place 2 0 web-post-br)
             (thumb-place 2 -1 web-post-tr))
-      (hull (thumb-place 1 -1/2 thumb-tl)
+      (hull (thumb-place 1 -1/2 thumb-tl2)
             (thumb-place 2 0 web-post-tr)
             (thumb-place 2 0 web-post-br))
-      (hull (thumb-place 1 -1/2 thumb-bl)
+      (hull (thumb-place 1 -1/2 thumb-bl2)
             (thumb-place 2 -1 web-post-tr)
             (thumb-place 2 -1 web-post-br))
 
@@ -1155,9 +1189,9 @@
       (hull cover-sphere-tr tr mrb mrt)
       (hull cover-sphere-br br mrb mrt))))
 
-(def io-exp-width 10)
-(def io-exp-height 8)
-(def io-exp-length 36)
+(def io-exp-width 21)
+(def io-exp-height 12)
+(def io-exp-length 35)
 
 (def teensy-width 21)
 (def teensy-height 12)
@@ -1548,7 +1582,9 @@
                connectors
                thumb
                new-case
-               teensy-support)
+               teensy-support
+			   ;dactyl-keycaps-right
+			   )
       trrs-hole-just-circle
       screw-holes))))
 
@@ -1587,9 +1623,12 @@
 (spit "things/dactyl-keycaps-left.scad"
       (write-scad dactyl-keycaps-left))
 
-#_
+
 (spit "things/dactyl-keycaps-right.scad"
       (write-scad dactyl-keycaps-right))
+
+(spit "things/dactyl-combined-left.scad"
+      (write-scad (union dactyl-bottom-left dactyl-top-left)))
 
 #_
 (if RESTS_SEPERATE
