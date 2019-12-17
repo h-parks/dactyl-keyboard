@@ -20,15 +20,15 @@
 (def plate-thickness 4) ; was 4
 
 (def keyswitch-height 13) ;; Was 14.1, then 14.25
-(def keyswitch-width 15.6)
+(def keyswitch-width 17.2)
 (def keyswitch-notch-width 15.5)
-(def keyswitch-notch-height 1)
+(def keyswitch-notch-height 1.1)
 
 (def key-height 7.4) ; was 12.7, then 10.4
 (def dsa-profile-key-height 7.4)
 (def key-z (+ plate-thickness 6)) ; 3 is pressed, 7 is released
 
-(def mount-width (+ keyswitch-width 3))
+(def mount-width (+ keyswitch-width 1.4))
 (def mount-height (+ keyswitch-height 4.8))
 
 (def single-plate
@@ -40,7 +40,7 @@
                               (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
                                           0
                                           (/ plate-thickness 2)]))
-                         (->> (cube 1.5 (+ keyswitch-height 4.8) 1.0)
+                         (->> (cube 1.5 (+ keyswitch-height 4.8) 1.1)
                               (translate [(+ (/ 1.5 2) (/ keyswitch-notch-width 2))
                                           0
                                           (- plate-thickness
@@ -57,7 +57,7 @@
 ;;;;;;;;;;;;;;;;
 
 (def sa-length 18)
-(def sa-double-length 37.5)
+(def sa-double-length 37.05)
 (def sa-cap {1 (let [bl2 (/ sa-length 2)
                      m (/ dsa-profile-key-height 2)
                      key-cap (hull (->> (polygon [[bl2 bl2] [bl2 (- bl2)] [(- bl2) (- bl2)] [(- bl2) bl2]])
@@ -228,10 +228,10 @@
                    (translate [0 0 (+ (/ web-thickness -2)
                                       plate-thickness)])))
 (def post-adj (/ post-size 2))
-(def web-post-tr (translate [(- (/ mount-width 2) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
-(def web-post-tl (translate [(+ (/ mount-width -2) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
-(def web-post-bl (translate [(+ (/ mount-width -2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
-(def web-post-br (translate [(- (/ mount-width 2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
+(def web-post-tr (translate [(- (/ mount-width 1.85) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
+(def web-post-tl (translate [(+ (/ mount-width -1.85) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
+(def web-post-bl (translate [(+ (/ mount-width -1.85) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
+(def web-post-br (translate [(- (/ mount-width 1.85) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
 
 (defn triangle-hulls [& shapes]
   (apply union
@@ -321,7 +321,7 @@
 
 (def double-plates
   (let [plate-height (/ (- sa-double-length mount-height) 2)
-        top-plate (->> (cube (+ 3.6 mount-height) plate-height web-thickness)
+        top-plate (->> (cube (+ 2.7 mount-height) plate-height web-thickness)
                        (translate [0 (/ (+ plate-height mount-height) 2)
                                    (- plate-thickness (/ web-thickness 2))]))
 
@@ -339,10 +339,10 @@
                                       (color [1 0 0 1/2]))									  
 									  )
         top-plate (difference top-plate stabilizer-cutout)
-      right-side-plate (->> (cube 3.4 (* 3.5 plate-height ) web-thickness)
-                      (translate [9 0 (- plate-thickness (/ web-thickness 2))]))
-      left-side-plate (->> (cube 3.4 (* 3.5 plate-height ) web-thickness)
-                      (translate [-9 0 (- plate-thickness (/ web-thickness 2))]))
+      right-side-plate (->> (cube 2.8 (* 3 plate-height ) web-thickness)
+                      (translate [9 4 (- plate-thickness (/ web-thickness 2))]))
+      left-side-plate (->> (cube 2.8 (* 3 plate-height ) web-thickness)
+                      (translate [-9 4 (- plate-thickness (/ web-thickness 2))]))
 					right-side-plate (difference right-side-plate stabilizer-cutout)
 left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
@@ -583,9 +583,9 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                  (key-place 0 0 web-post-tr))
 
            (hull (place 5 0 (translate [0 -0.91 1.32] wall-cube-bottom-back))
-                 (place right-wall-column 0 (translate [-1.2 -1.52 0.91] wall-cube-bottom-back))
+                 (place right-wall-column 0 (translate [-2.2 -1.52 0.91] wall-cube-bottom-back))
                  (key-place 5 0 web-post-tl)
-                 (key-place 5 0 (translate [1.95 0 0.05] web-post-tr)))
+                 (key-place 5 0 (translate [0.25 0 0.05] web-post-tr)))
 
            (apply union
                   (for [x (range 1 5)]
@@ -780,9 +780,9 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
   (hull p (bottom 1 p)))
 
 
-(def bottom-key-guard (->> (cube mount-width mount-height web-thickness)
+(def bottom-key-guard (->> (cube (+ mount-width 1.5) mount-height web-thickness)
                            (translate [0 0 (+ (- (/ web-thickness 2)) -5)])))
-(def bottom-front-key-guard (->> (cube mount-width (/ mount-height 2) web-thickness)
+(def bottom-front-key-guard (->> (cube (+ mount-width 1.5) (/ mount-height 2) web-thickness)
                                  (translate [0 (/ mount-height 4) (+ (- (/ web-thickness 2)) -5)])))
 
 (defn stand-at [diameter placement]
@@ -908,8 +908,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                        (hull (bottom-place right-wall-column 0 (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (bottom-place right-wall-column 0.017 (translate [-1 -1 1.15] (wall-cube-bottom 1)))
                              (key-place 5 0 web-post-tr))
-                       (hull (bottom-place right-wall-column 4 (translate [0 0 1] (wall-cube-bottom 1/2)))
-                             (bottom-place right-wall-column 4 (translate [0 1 1] (wall-cube-bottom 0)))
+                       (hull (bottom-place right-wall-column 4 (translate [-1 0 1] (wall-cube-bottom 1/2)))
+                             (bottom-place right-wall-column 4 (translate [-1 1 1] (wall-cube-bottom 0)))
                              (key-place 5 4 half-post-br))
                        (hull (bottom-place right-wall-column 4 (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (key-place 5 4 half-post-br)
@@ -1079,7 +1079,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                         (key-place 1 4 half-post-bl)
                         (key-place 1 4 half-post-br)
                         (bottom-place (- 2 1/2) 4 (translate [0 front-offset 1] wall-cube-bottom-front))
-                        (bottom-place 0.75 4 (translate [0 (+ front-offset 0.65) 0] wall-cube-bottom-front)))
+                        (bottom-place 0.8 4 (translate [0 (+ front-offset 0.65) 0] wall-cube-bottom-front)))
 
                        (hull
                         (thumb-place 0 -1 web-post-br)
@@ -1100,7 +1100,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
              thumb-back-wall
              thumb-left-wall
              thumb-front-wall
-             thumb-inside)))))
+             thumb-inside
+             )))))
 
 (defn stands-at [diameter]
   (union
@@ -1242,11 +1243,11 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
          (translate [0 0 -2])
          (key-place 1/2 3/2)
          (color [0 1 0]))
-    (hull (->> (cube 5 6 9)
+    (hull (->> (cube 4 6 9)
                (translate [0 0 -2])
                (key-place 1/2 2)
                (color [0 0 1]))
-          (->> (cube 5 5 (+ teensy-pcb-thickness 5))
+          (->> (cube 4 5 (+ teensy-pcb-thickness 5))
                (translate [0 (/ 30.5 -2) (+ (- teensy-offset-height)
                                             #_(/ (+ teensy-pcb-thickness 5) -2)
                                             )])
@@ -1596,7 +1597,9 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
           (union key-holes
                  connectors
                  thumb
-                 new-case)
+                 new-case
+				 ;dactyl-keycaps-right
+				 )
           trrs-hole-just-circle
           screw-holes)))))
 
@@ -1620,15 +1623,24 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
       (write-scad dactyl-bottom-left))
 
 
-(spit "things/dactyl-keycaps-left.scad"
-      (write-scad dactyl-keycaps-left))
+;(spit "things/dactyl-keycaps-left.scad"
+    ;  (write-scad dactyl-keycaps-left))
 
 
-(spit "things/dactyl-keycaps-right.scad"
-      (write-scad dactyl-keycaps-right))
+;(spit "things/dactyl-keycaps-right.scad"
+   ;   (write-scad dactyl-keycaps-right))
 
-(spit "things/dactyl-combined-left.scad"
-      (write-scad (union dactyl-bottom-left dactyl-top-left)))
+;(spit "things/dactyl-combined-left.scad"
+  ;    (write-scad (union dactyl-bottom-left dactyl-top-left)))
+	  
+;(spit "things/dactyl-combined-right.scad"
+ ;     (write-scad (union dactyl-bottom-right dactyl-top-right)))
+
+;(spit "things/switch-hole.scad"
+ ;     (write-scad single-plate))
+
+;(spit "things/alps-holes.scad"
+ ;     (write-scad (union connectors key-holes)))
 
 #_
 (if RESTS_SEPERATE
