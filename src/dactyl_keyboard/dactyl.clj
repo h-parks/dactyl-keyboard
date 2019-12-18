@@ -886,14 +886,15 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                         (hull (bottom-place (- x 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
                               (key-place x 4 half-post-bl)
                               (key-place (- x 1) 4 half-post-br))))
-                     [(hull (bottom-place right-wall-column 4 (translate [0 1 1] wall-cube-bottom-front))
-                            (bottom-place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
+                     [(hull (bottom-place right-wall-column 4 (translate [-1.5 1 1] wall-cube-bottom-front))
+                            (bottom-place (- right-wall-column 1) 4 (translate [-1.5 1 1] wall-cube-bottom-front))
                             (key-place 5 4 half-post-bl)
                             (key-place 5 4 half-post-br))
                       (hull (bottom-place (+ 4 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
                             (bottom-place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
                             (key-place 4 4 half-post-br)
-                            (key-place 5 4 half-post-bl))])
+                            (key-place 5 4 half-post-bl))
+                      ])
          right-wall (concat
                      (for [x (range 0 4)]
                        (hull (bottom-place right-wall-column x (translate [-1 0 1] (wall-cube-bottom 1/2)))
@@ -1138,8 +1139,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 (def screw-holes
   (union
-   (key-place (+ 4.7) 1/2 screw-hole)
-   (key-place (+ 4.7) (+ 3 1/2) screw-hole)
+   (key-place (+ 4 1/2) 1/2 screw-hole)
+   (key-place (+ 4 1/2) (+ 3 1/2) screw-hole)
    (thumb-place 2 -1/2 screw-hole)))
 
 (defn circuit-cover [width length height]
