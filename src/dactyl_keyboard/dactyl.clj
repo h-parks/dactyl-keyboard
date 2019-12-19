@@ -227,11 +227,19 @@
 (def web-post (->> (cube post-size post-size web-thickness)
                    (translate [0 0 (+ (/ web-thickness -2)
                                       plate-thickness)])))
+(def web-post2 (->> (cube post-size post-size 0.1)
+                   (translate [0 0 0.05] )))
+
 (def post-adj (/ post-size 2))
 (def web-post-tr (translate [(- (/ mount-width 1.85) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
 (def web-post-tl (translate [(+ (/ mount-width -1.85) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
 (def web-post-bl (translate [(+ (/ mount-width -1.85) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
 (def web-post-br (translate [(- (/ mount-width 1.85) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
+
+(def web-post-tr2 (translate [(- (/ mount-width 1.85) post-adj) (- (/ mount-height 2) post-adj) 0] web-post2))
+(def web-post-tl2 (translate [(+ (/ mount-width -1.85) post-adj) (- (/ mount-height 2) post-adj) 0] web-post2))
+(def web-post-bl2 (translate [(+ (/ mount-width -1.85) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post2))
+(def web-post-br2 (translate [(- (/ mount-width 1.85) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post2))
 
 (defn triangle-hulls [& shapes]
   (apply union
@@ -613,21 +621,30 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
              (for [x (range 0 5)]
                (union
                 (hull (place right-wall-column x (translate [-1 -1 1] (wall-cube-bottom 1/2)))
-                      (place 6 x web-post-br)
-                      (place 6 x web-post-tr))))
+                      (place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+
+                      (place 6 x web-post-br2)
+                      (place 6 x web-post-tr2))))
              (for [x (range 0 4)]
                (union
                 (hull (place right-wall-column x (translate [-1 -1 1] (wall-cube-bottom 1/2)))
                       (place right-wall-column (inc x) (translate [-1 -1 1] (wall-cube-bottom 1/2)))
-                      (place 6 x web-post-br)
-                      (place 6 (inc x) web-post-tr))))
+                     (place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      (place right-wall-column (inc x) (translate [-1 -1 (- 2.45 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      (place 6 x web-post-br2)
+                      (place 6 (inc x) web-post-tr2))))
              [(union
                (hull (place right-wall-column 0 (translate [-1 -1 1] (wall-cube-bottom 1/2)))
                      (place right-wall-column 0 (translate [-1.2 -1.5 0.9] (wall-cube-bottom 1)))
-                     (place 6 0 web-post-tr))
+                     (key-place 5.5 -0.5 (translate [0 -1.25 3.4] (cube 0.1 0.1 0.1)))
+                     (key-place 5.5 0 (translate [0 -1.25 3.4] (cube 0.1 0.1 0.1)))
+                     (place 6 0 web-post-tr2))
                (hull (place right-wall-column 4 (translate [-1 -1 1] (wall-cube-bottom 1/2)))
+               (place right-wall-column 5 (translate [-1 10.45 -3.8] (cube 0.1 0.1 4)))
                      (place right-wall-column 4 (translate [-1 1 1] (wall-cube-bottom 0)))
-                     (place 6 4 web-post-br)))])))))
+                     (key-place 5.5 4 (translate [0 1.25 3] (cube 0.1 0.1 0.1)))
+                     (key-place 5.5 4.5 (translate [0 1.45 3.2] (cube 0.1 0.1 0.1)))
+                     (place 6 4 web-post-br2)))])))))
 
 (def left-wall
   (let [place case-place]
