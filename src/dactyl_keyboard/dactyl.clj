@@ -11,13 +11,18 @@
 (def ^:const RESTS_SEPERATE false)
 (def ^:const STANDS_SEPERATE false)
 
+(defn offset-case-place [offset block]
+  (->> block
+       (translate [0 0 1])
+       (translate offset)))
+
 (def additional-thumb-x-offset -1)  				;;additional offset for thumb cluster-0 by default
 
 ;;;;;;;;;;;;;;;;;
 ;; Switch Hole ;;
 ;;;;;;;;;;;;;;;;;
 
-(def plate-thickness 4) ; was 4
+(def plate-thickness 2) ; was 4
 
 (def keyswitch-height 13) ;; Was 14.1, then 14.25
 (def keyswitch-width 17.2)
@@ -108,7 +113,7 @@
 (def row-radius (+ (/ (/ (+ mount-height 1/2) 2)
                       (Math/sin (/ α 2)))
                    cap-top-height))
-(def column-radius (+ (/ (/ (+ mount-width 2.0) 2)
+(def column-radius (+ (/ (/ (+ mount-width 2) 2)
                          (Math/sin (/ β 2)))
                       cap-top-height))
 
@@ -138,7 +143,7 @@
                               (rotate (* α (- 2 row)) [1 0 0])
                               (translate [0 0 row-radius]))
         column-offset (if (= column 6)
-                        [-7.25 -5.8 2.1]
+                        [-7.25 -6.3 2.1]
                         [0 -3.35 4.9])
         row-offset (if (= row 0)
                      [0 -2.3 0]
@@ -166,8 +171,8 @@
         column-offset (cond (< column 1.5) [-1 0 0]
                        :else [0 0 0])
         column-row-offset (if (not= column 6) [0 -4.35 4.8]
-                        (if (not= row 4) [-7.25 -5.8 2.1]
-                                         [-7.89 -5.8 3.6]))
+                        (if (not= row 4) [-7.25 -6.3 2.1]
+                                         [-7.89 -6.3 3.6]))
         column-angle (* β (- 2 column))
         placed-shape (->> row-placed-shape
                           (translate [0 0 (- column-radius)])
@@ -485,11 +490,35 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
   (->> (cube 3 3 3)
        (translate coords)))
 
+(defn wall-thicc-cube-at [coords]
+  (->> (cube 9 3 3)
+       (translate coords)))
+
+(defn wall-half-cube-at [coords]
+  (->> (cube 3 3 1.5)
+       (translate coords)))
+
 (defn scale-to-range [start end x]
   (+ start (* (- end start) x)))
 
 (defn wall-cube-bottom [front-to-back-scale]
   (wall-cube-at [0
+                   (scale-to-range
+                    (+ (/ mount-height -2) -3.5)
+                    (+ (/ mount-height 2) 5.0)
+                    front-to-back-scale)
+                   -6])) ; was -6, then 2
+
+(defn wall-half-cube-bottom [front-to-back-scale]
+  (wall-half-cube-at [0
+                   (scale-to-range
+                    (+ (/ mount-height -2) -3.5)
+                    (+ (/ mount-height 2) 5.0)
+                    front-to-back-scale)
+                   -6])) ; was -6, then 2
+
+(defn wall-cube-thicc-bottom [front-to-back-scale]
+  (wall-thicc-cube-at [0
                    (scale-to-range
                     (+ (/ mount-height -2) -3.5)
                     (+ (/ mount-height 2) 5.0)
@@ -508,6 +537,13 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 (def wall-cube-bottom-back (wall-cube-bottom 1))
 (def wall-cube-bottom-front (wall-cube-bottom 0))
 (def wall-cube-top-front (wall-cube-top 0))
+
+
+(def wall-cube-thicc-bottom-back (wall-cube-thicc-bottom 1))
+(def wall-cube-thicc-bottom-front (wall-cube-thicc-bottom 0))
+
+(def wall-half-cube-bottom-back (wall-half-cube-bottom 1))
+
 
 (defn top-case-cover [place-fn sphere
                  x-start x-end
@@ -558,19 +594,20 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                (hull (place (- x 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
                      (key-place x 4 web-post-bl)
                      (key-place (- x 1) 4 web-post-br)))))
-     (hull (place right-wall-column 4 (translate [-1 1 1] wall-cube-bottom-front))
-           (place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
+     (hull (place right-wall-column 4 (translate [-1 0 1] wall-cube-bottom-front))
+           (place (- right-wall-column 1) 4 (translate [0 0.7 1] wall-cube-bottom-front))
            (key-place 5 4 web-post-bl)
-           (key-place 5 4 web-post-br))
+           (key-place 5 4 web-post-br)
+           )
      (hull (place right-wall-column 4 (translate [-1 1 1] wall-cube-bottom-front))
            (place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
            (key-place 6 4 web-post-bl)
            (key-place 5 4 web-post-br))
-     (hull (place (+ 4 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
-           (place (- right-wall-column 1) 4 (translate [0 1 1] wall-cube-bottom-front))
+     (hull (place (+ 3 1/2) 4 (translate [0 1 1] wall-cube-bottom-front))
+           (place (- right-wall-column 1) 4 (translate [0 0.6 1] wall-cube-bottom-front))
            (key-place 4 4 web-post-br)
            (key-place 5 4 web-post-bl))
-     (hull (place 0.75 4 (translate [1 1.73 -0.805] wall-cube-bottom-front))
+     (hull (place 0.75 4 (translate [1 1.53 -0.805] wall-cube-bottom-front))
            (place 1.5 4 (translate [0 1 1] wall-cube-bottom-front))
            (key-place 1 4 (translate [0.001 0 0] web-post-bl))
            (key-place 1 4 (translate [0.001 0 0] web-post-br))))))
@@ -585,29 +622,29 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
     (difference
       (union
         (union
-           (hull (place left-wall-column 0 (translate [1 -1 1] wall-cube-bottom-back))
-                 (place (+ left-wall-column 1) 0  (translate [0 -1 1] wall-cube-bottom-back))
+           (hull (place left-wall-column 0 (translate [-3 -0.5 1] wall-cube-bottom-back))
+                 (place (+ left-wall-column 1) 0  (translate [0 -0.5 1] wall-cube-bottom-back))
                  (key-place 0 0 web-post-tl)
                  (key-place 0 0 web-post-tr))
 
-           (hull (place 5 0 (translate [0 -0.91 1.32] wall-cube-bottom-back))
-                 (place right-wall-column 0 (translate [-2.2 -1.52 0.91] wall-cube-bottom-back))
+           (hull (place 5 0 (translate [0 -0.11 1] wall-cube-bottom-back))
+                 (place right-wall-column 0 (translate [-1.1 -0.4 -0.1] wall-cube-bottom-back))
                  (key-place 5 0 web-post-tl)
                  (key-place 5 0 (translate [0.25 0 0.05] web-post-tr)))
 
            (apply union
                   (for [x (range 1 5)]
                     (union
-                     (hull (place (- x 1/2) 0 (translate [0 -1 1] wall-cube-bottom-back))
-                           (place (+ x 1/2) 0 (translate [0 -1 1] wall-cube-bottom-back))
+                     (hull (place (- x 1/2) 0 (translate [0 -0.5 1] wall-cube-bottom-back))
+                           (place (+ x 1/2) 0 (translate [0 -0.5 1] wall-cube-bottom-back))
                            (key-place x 0 web-post-tl)
                            (key-place x 0 web-post-tr))
-                     (hull (place (- x 1/2) 0 (translate [0 -1 1] wall-cube-bottom-back))
+                     (hull (place (- x 1/2) 0 (translate [0 -0.5 1] wall-cube-bottom-back))
                            (key-place x 0 web-post-tl)
                            (key-place (- x 1) 0 web-post-tr))))))
 
-         (hull (place (- 5 1/2) 0 (translate [0 -1 1] wall-cube-bottom-back))
-               (place 5 0 (translate [0 -0.91 1.32] wall-cube-bottom-back))               
+         (hull (place (- 5 1/2) 0 (translate [0 -0.44 1] wall-cube-bottom-back))
+               (place 5 0 (translate [0 -0.11 1] wall-cube-bottom-back))               
                (key-place 4 0 web-post-tr)
                (key-place 5 0 web-post-tl)))
       (union case-back-cutout
@@ -623,33 +660,34 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                 (hull (place right-wall-column x (translate [-1 -1 1] (wall-cube-bottom 1/2)))
                       (place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
 
-                      (place 6 x web-post-br2)
-                      (place 6 x web-post-tr2))))
+                      (place 6 x (translate[2 0 0]web-post-br2))
+                      (place 6 x (translate[2 0 0]web-post-tr2)))))
              (for [x (range 0 4)]
                (union
                 (hull (place right-wall-column x (translate [-1 -1 1] (wall-cube-bottom 1/2)))
                       (place right-wall-column (inc x) (translate [-1 -1 1] (wall-cube-bottom 1/2)))
                      (place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
                       (place right-wall-column (inc x) (translate [-1 -1 (- 2.45 (* x 0.55))] (cube 0.1 0.1 0.1)))
-                      (place 6 x web-post-br2)
-                      (place 6 (inc x) web-post-tr2))))
+                      (place 6 x (translate[2 0 0]web-post-br2))
+                      (place 6 (inc x) (translate[2 0 0]web-post-tr2)))))
              [(union
                (hull (place right-wall-column 0 (translate [-1 -1 1] (wall-cube-bottom 1/2)))
-                     (place right-wall-column 0 (translate [-1.2 -1.5 0.9] (wall-cube-bottom 1)))
+                     (place right-wall-column 0 (translate [-1.1 -0.4 -0.1] (wall-cube-bottom 1)))
                      (key-place 5.5 -0.5 (translate [0 -1.25 3.4] (cube 0.1 0.1 0.1)))
                      (key-place 5.5 0 (translate [0 -1.25 3.4] (cube 0.1 0.1 0.1)))
-                     (place 6 0 web-post-tr2))
+                     (place 6 0 (translate [2 0 0]web-post-tr2)))
                (hull (place right-wall-column 4 (translate [-1 -1 1] (wall-cube-bottom 1/2)))
-               (place right-wall-column 5 (translate [-1 10.45 -3.8] (cube 0.1 0.1 4)))
-                     (place right-wall-column 4 (translate [-1 1 1] (wall-cube-bottom 0)))
+              						 ;(place right-wall-column 5 (translate [-1 10.45 -3.8] (cube 0.1 0.1 4)))
+                     (place right-wall-column 4 (translate [-1.1 0 1] (wall-cube-bottom 0)))
+                     (place right-wall-column 4 (translate [4 0 1] (wall-cube-bottom 0)))                     
                      (key-place 5.5 4 (translate [0 1.25 3] (cube 0.1 0.1 0.1)))
-                     (key-place 5.5 4.5 (translate [0 1.45 3.2] (cube 0.1 0.1 0.1)))
-                     (place 6 4 web-post-br2)))])))))
+                     (key-place 5.5 4.5 (translate [0 -1.45 3.2] (cube 0.1 0.1 0.1)))
+                     (place 6 4 (translate[2 -0.075 0]web-post-br2))))])))))
 
 (def left-wall
   (let [place case-place]
     (union
-     (hull (place left-wall-column 0 (translate [1 -1.5 1] wall-cube-bottom-back))
+     (hull (place left-wall-column 0 (translate [1 -0.9 1.25] wall-cube-bottom-back))
            (place left-wall-column 1 (translate [1 0 1] wall-cube-bottom-back))
            (key-place 0 0 web-post-tl)
            (key-place 0 0 web-post-bl))
@@ -660,7 +698,35 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
      (hull (place left-wall-column 2 (translate [1 0 1] wall-cube-bottom-back))
            (place left-wall-column 1.71 (translate [1 0 3.5] wall-cube-bottom-front))
            (key-place 0 1 web-post-bl)
-           (key-place 0 2 web-post-bl)))))
+           (key-place 0 2 web-post-bl))
+
+     (hull (place left-wall-column 0 (translate [-2 -0.9 1.25] wall-cube-bottom-back))
+           (place left-wall-column 1 (translate [-2 0 1] wall-cube-bottom-back))
+           (key-place 0 0 web-post-tl)
+           (key-place 0 0 web-post-bl))
+     (hull (place left-wall-column 1 (translate [-2 0 1] wall-cube-bottom-back))
+           (place left-wall-column 2 (translate [-2 0 1] wall-cube-bottom-back))
+           (key-place 0 0 web-post-bl)
+           (key-place 0 1 web-post-bl))
+     (hull (place left-wall-column 2 (translate [-2 0 1] wall-cube-bottom-back))
+           (place left-wall-column 1.71 (translate [-2 0 3.5] wall-cube-bottom-front))
+           (key-place 0 1 web-post-bl)
+           (key-place 0 2 web-post-bl))
+
+     (hull (place left-wall-column 0 (translate [-3 -0.9 1.25] wall-cube-bottom-back))
+           (place left-wall-column 1 (translate [-3 0 1] wall-cube-bottom-back))
+           (key-place 0 0 web-post-tl)
+           (key-place 0 0 web-post-bl))
+     (hull (place left-wall-column 1 (translate [-3 0 1] wall-cube-bottom-back))
+           (place left-wall-column 2 (translate [-3 0 1] wall-cube-bottom-back))
+           (key-place 0 0 web-post-bl)
+           (key-place 0 1 web-post-bl))
+     (hull (place left-wall-column 2 (translate [-3 0 1] wall-cube-bottom-back))
+           (place left-wall-column 1.71 (translate [-3 0 3.5] wall-cube-bottom-front))
+           (key-place 0 1 web-post-bl)
+           (key-place 0 2 web-post-bl))
+
+     )))
 
 (def left-inside-wall
   (let [place case-place]
@@ -687,39 +753,131 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
       (thumb-place 3/2 thumb-back-y (translate [0 -1.7 thumb-case-z] wall-cube-bottom-back))
       (thumb-place 1 1 web-post-tl))
      (hull
-      (thumb-place (+ 5/2 0.05) thumb-back-y (translate [1.5 -1.7 thumb-case-z] wall-cube-bottom-back))
+      (thumb-place (+ 5/2 0.05) thumb-back-y (translate [1.5 -0.59 (+ 1.225 thumb-case-z)] wall-cube-bottom-back))
       (thumb-place 3/2 thumb-back-y (translate [0 -1.7 thumb-case-z] wall-cube-bottom-back))
       (thumb-place 1 1 web-post-tl)
-      (thumb-place 2 1 web-post-tl)))))
+      (thumb-place 2 1 web-post-tl))
+     (hull
+      (thumb-place (+ 5/2 0.05) thumb-back-y (translate [1.5 -0.59 thumb-case-z] wall-cube-bottom-back))
+      (thumb-place 3/2 thumb-back-y (translate [0 -1.7 thumb-case-z] wall-cube-bottom-back))
+      (thumb-place 1 1 web-post-tl)
+      (thumb-place 2 1 web-post-tl))
+     (hull
+      (thumb-place (+ 5/2 0.05) thumb-back-y (translate [1.5 -0.59 thumb-case-z] wall-cube-bottom-back))
+      (thumb-place (+ 5/2 0.05) thumb-back-y (translate [-5.75 -0.58 thumb-case-z] wall-cube-bottom-back))
+     ))))
 
 (def thumb-left-wall
   (let [step wall-step
         place thumb-place
         wall (+ thumb-left-wall-column 0.001)]
     (union
+     ;;top innermost left thumb wall
      (hull
-      (thumb-place wall thumb-back-y (translate [1.5 -1.7 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place wall 0 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place 2 1 web-post-tl)
-      (thumb-place 2 1 web-post-bl))
+      (translate [0 0 2.6] (thumb-place wall thumb-back-y (translate [1.2 -1.7 (+ -0.935 thumb-case-z)] wall-cube-bottom-back)))
+      (translate [0 0 1.4] (thumb-place wall thumb-back-y (translate [1.2 -1.7 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 2.6] (thumb-place wall 0 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 1.2] (thumb-place wall 0 (translate [1.5 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 4.5] (thumb-place 2 1 web-post-tl))
+      (translate [0 0 2.5] (thumb-place 2 0 web-post-tl)))
      (hull
-      (thumb-place wall 0 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place 2 0 web-post-tl)
-      (thumb-place 2 1 web-post-bl))
+      (translate [0 0 2.6] (thumb-place wall 0 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 1.2] (thumb-place wall 0 (translate [-1.5 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 1.2] (thumb-place wall 0 (translate [-4.4 -3.2 thumb-case-z] wall-cube-bottom-back)))      
+      (translate [0 0 2.5] (thumb-place 2 0 web-post-tl))
+      (translate [0 0 4.5] (thumb-place 2 1 web-post-tl)))
+     ;;middle innermost left thumb wall
      (hull
-      (thumb-place wall 0 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place wall -1 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place 2 0 web-post-tl)
-      (thumb-place 2 0 web-post-bl))
+      (translate [0 -3.15 0.77] (thumb-place wall 0 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 -3.15 1.52] (thumb-place wall -1 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 2.5]  (thumb-place 2 0 web-post-tl))
+      (translate [0 0 2.5](thumb-place 2 -1 web-post-tl)))
      (hull
-      (thumb-place wall -1 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place 2 -1 web-post-tl)
-      (thumb-place 2 0 web-post-bl))
+      (translate [0 0.1255 1.2485](thumb-place wall 0 (translate [1.475 -3.25 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0.2 1.065](thumb-place wall -1 (translate [1.5 -3.25 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 2.5](thumb-place 2 -1 web-post-tl))
+      (translate [0 0 2.5](thumb-place 2 0 web-post-tl))
+      )
+     ;;bottom innermost left thumb wall
      (hull
-      (thumb-place wall -1 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back))
-      (thumb-place wall (+ -1 0.07) (translate [1.5 0.6 (+ thumb-case-z 0.2)] wall-cube-bottom-front))
-      (thumb-place 2 -1 web-post-tl)
-      (thumb-place 2 -1 web-post-bl)))))
+      (translate [0 -3.15 1.515](thumb-place wall -1 (translate [1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 -3.15 1.115](thumb-place wall (+ -1 0.07) (translate [1.5 3.6 (+ thumb-case-z 0.2)] wall-cube-bottom-front)))
+      (translate [0 0 2.5](thumb-place 2 -1 web-post-tl))
+      (translate [0 0 4.5](thumb-place 2 -1 web-post-bl)))
+     (hull
+      (translate [0 2.015 0.825](thumb-place wall -1 (translate [0.9725 -6.27 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0.8375 0.675](thumb-place wall (+ -1 0.07) (translate [1 -0.25 (+ thumb-case-z 0.2)] wall-cube-bottom-front)))
+      (translate [0 0 2.5](thumb-place 2 -1 web-post-tl))
+      (translate [0 0 4.5](thumb-place 2 -1 web-post-bl)))
+     ;;top middle left thumb wall
+     (hull
+      (translate [0 0 2.6] (thumb-place wall thumb-back-y (translate [-1.8 -1.7 (+ -0.935 thumb-case-z)] wall-cube-bottom-back)))
+      (translate [0 0 1.4] (thumb-place wall thumb-back-y (translate [-1.8 -1.7 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 2.6] (thumb-place wall 0 (translate [-1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 1.2] (thumb-place wall 0 (translate [-1.5 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 4.5] (thumb-place 2 1 web-post-tl))
+      (translate [0 0 2.5] (thumb-place 2 1 web-post-bl))
+      )
+     ;;connector to middle innermost thumb wall
+     ;(hull
+      ;(translate [0 0 1.7] (thumb-place wall 0 (translate [-1.5 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      ;(translate [0 0 1.2] (thumb-place wall 0 (translate [-1.5 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      ;(translate [0 0 4.5] (thumb-place 2 0 web-post-tl))
+      ;(translate [0 0 4.5] (thumb-place 2 1 web-post-bl)))
+     ;;mid middle left thumb wall
+     (hull
+      (translate [0 -3.15 0.77](thumb-place wall 0 (translate [-1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 -3.15 1.52](thumb-place wall -1 (translate [-1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 2.5] (thumb-place 2 -1 web-post-tl))
+      (translate [0 0 2.5] (thumb-place 2 0 web-post-tl))
+      )
+     ;;connector to bottom innermost left thumb wall
+     ;(hull
+      ;(thumb-place wall -1 (translate [-1.5 0 thumb-case-z] wall-cube-bottom-back))
+      ;(thumb-place 2 -1 web-post-tl)
+      ;(thumb-place 2 0 web-post-bl))
+     ;;bottom middle left thumb wall
+     (hull
+      (translate [0 -3.15 1.515](thumb-place wall -1 (translate [-1.5 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 -3.15 1.115](thumb-place wall (+ -1 0.07) (translate [-1.5 3.6 (+ thumb-case-z 0.2)] wall-cube-bottom-front)))
+      (translate [0 0 2.5](thumb-place 2 -1 web-post-tl))
+      (translate [0 0 4.5](thumb-place 2 -1 web-post-bl)))
+     ;;top outermost left thumb wall 
+     (hull
+      (translate [0 0 2.6] (thumb-place wall thumb-back-y (translate [-4.8 -1.7 (+ -0.935 thumb-case-z)] wall-cube-bottom-back)))
+      (translate [0 0 1.4] (thumb-place wall thumb-back-y (translate [-4.6 -1.7 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 1.2] (thumb-place wall 0 (translate [-4.4 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 1.2] (thumb-place wall 0 (translate [-4.4 -3.2 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 4.5] (thumb-place 2 1 web-post-tl))
+      (translate [0 0 2.5] (thumb-place 2 1 web-post-bl)))
+     ;;connector to middle innermost thumb wall
+     ;(hull
+      ;(thumb-place wall 0 (translate [-3.5 0 thumb-case-z] wall-cube-bottom-back))
+      ;(thumb-place 2 0 web-post-tl)
+      ;(thumb-place 2 1 web-post-bl))
+     ;;middle outermost left thumb wall
+     (hull
+      (translate [0 -3.15 0.77](thumb-place wall 0 (translate [-3.75 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 -3.15 1.52](thumb-place wall -1 (translate [-3.75 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 0 2.5] (thumb-place 2 0 web-post-tl))
+      (translate [0 0 2.5] (thumb-place 2 -1 web-post-tl)))
+     ;;connector to bottom innermost thumb wall
+     ;(hull
+      ;(thumb-place wall -1 (translate [-3.5 0 thumb-case-z] wall-cube-bottom-back))
+      ;(thumb-place 2 -1 web-post-tl)
+      ;(thumb-place 2 0 web-post-bl))
+     ;;bottom outermost left thumb wall
+     (hull
+      (translate [0 -3.15 1.515](thumb-place wall -1 (translate [-3.675 0 thumb-case-z] wall-cube-bottom-back)))
+      (translate [0 -3.15 1.115](thumb-place wall (+ -1 0.07) (translate [-4.45 3.6 (+ thumb-case-z 0.2)] wall-cube-bottom-front)))
+      (translate [0 0 2.5](thumb-place 2 -1 web-post-tl))
+      (translate [0 0 4.5](thumb-place 2 -1 web-post-bl)))
+     ;(hull
+      ;(translate [0 0 2.5] (thumb-place wall thumb-back-y (translate [-4 -1.7 thumb-case-z] wall-cube-bottom-back)))
+      ;(translate [0 0 2.5] (thumb-place wall 0 (translate [-4 0 thumb-case-z] wall-cube-bottom-back)))
+      ;(translate [0 0 4] (thumb-place 2 1 web-post-tl))
+      ;(translate [0 0 4] (thumb-place 2 1 web-post-bl)))
+     )))
 
 (def thumb-front-wall
   (let [step wall-step
@@ -738,7 +896,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
     (union
 
-     (hull (place (+ 5/2 0.05) wall (translate [1.5 1.5 thumb-case-z] wall-cube-bottom-front))
+     (hull (place (+ 5/2 0.05) wall (translate [1.5 1.43 (+ 0.77 thumb-case-z)] wall-cube-bottom-front))
            (place (+ 3/2 0.05) wall (translate [0 1.5 thumb-case-z] wall-cube-bottom-front))
            (place 2 -1 web-post-bl)
            (place 2 -1 web-post-br))
@@ -922,6 +1080,104 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                              (bottom-place right-wall-column (inc x) (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (key-place 5 x web-post-br)
                              (key-place 5 (inc x) web-post-tr)))
+;;this is bottom-mount code
+              (for [x (range 0 1)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                						(bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+
+                      (bottom-place 6 x (translate [2.1 0.85 1.205] web-post-br2))
+                      (bottom-place 6 x (translate [2.1 0.75 1.205] web-post-tr2)))))
+             (for [x (range 1 2)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                						(bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+
+                      (bottom-place 6 x (translate [2 0 1.295] web-post-br2))
+                      (bottom-place 6 x (translate [2 0.25 1.295] web-post-tr2)))))
+             (for [x (range 2 3)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                						(bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+
+                      (bottom-place 6 x (translate [2 0 1.295] web-post-br2))
+                      (bottom-place 6 x (translate [2 0 1.295] web-post-tr2)))))
+             (for [x (range 3 4)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                						(bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+
+                      (bottom-place 6 x (translate [2.2 -0.25 1.335] web-post-br2))
+                      (bottom-place 6 x (translate [2 0 1.305] web-post-tr2)))))
+
+             (for [x (range 4 5)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                						(bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+
+                      (bottom-place 6 x (translate [2.3 0.05 -0.2] web-post-br2))
+                      (bottom-place 6 x (translate [2.3 0 -0.2] web-post-tr2)))))
+
+             (for [x (range 0 1)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column (inc x) (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column (inc x) (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                     ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      ;(place right-wall-column (inc x) (translate [-1 -1 (- 2.45 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      (bottom-place 6 x (translate [2.1 0.85 1.205] web-post-br2))
+                      (bottom-place 6 (inc x) (translate [2 0.35 1.295] web-post-tr2)))))
+             (for [x (range 1 3)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column (inc x) (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column (inc x) (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                     ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      ;(place right-wall-column (inc x) (translate [-1 -1 (- 2.45 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      (bottom-place 6 x (translate [2 0 1.305] web-post-br2))
+                      (bottom-place 6 (inc x) (translate [2 0 1.305] web-post-tr2)))))
+
+             (for [x (range 3 4)]
+               (union
+                (hull (bottom-place right-wall-column x (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column (inc x) (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column x (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                      (bottom-place right-wall-column (inc x) (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                     ;(place right-wall-column x (translate [-1 -1 (- 3.05 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      ;(place right-wall-column (inc x) (translate [-1 -1 (- 2.45 (* x 0.55))] (cube 0.1 0.1 0.1)))
+                      (bottom-place 6 x (translate [2.2 -0.25 1.335] web-post-br2))
+                      (bottom-place 6 (inc x) (translate [2.3 0 -0.2] web-post-tr2)))))
+
+
+
+  [(union
+               (hull (bottom-place right-wall-column 0 (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+                     (bottom-place right-wall-column 0 (translate [-1 -0.8 -1] (wall-cube-bottom 1)))
+                     (bottom-place right-wall-column 0 (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                     ;(bottom-place right-wall-column 0 (translate [4 -0.8 -1] (wall-cube-bottom 1)))
+                     ;(key-place 5.5 -0.5 (translate [0 -1.25 3.4] (cube 0.1 0.1 0.1)))
+                     ;(key-place 5.5 0 (translate [0 -1.25 3.4] (cube 0.1 0.1 0.1)))
+                     (bottom-place 6 0 (translate [2.1 0.85 1.205] web-post-tr2)))
+               (hull (bottom-place right-wall-column 4 (translate [-1 -1 -1] (wall-cube-bottom 1/2)))
+               						(bottom-place right-wall-column 4 (translate [4 -1 -1] (wall-cube-bottom 1/2)))
+                     (bottom-place right-wall-column 5 (translate [-1 10.45 -3.8] (cube 0.1 0.1 4)))
+                     (bottom-place right-wall-column 4 (translate [-1 0.5 1] (wall-cube-bottom 0)))
+                     (bottom-place right-wall-column 4 (translate [4.1 0.115 1] (wall-cube-bottom 0)))
+                     ;(bottom-place right-wall-column 4 (translate [4 0 -1] (wall-cube-bottom 0)))
+                     ;(key-place 5.5 4 (translate [0 1.25 3] (cube 0.1 0.1 0.1)))
+                     ;(key-place 5.5 4.5 (translate [0 1.45 3.2] (cube 0.1 0.1 0.1)))
+                     (bottom-place 6 4 (translate [2.3 0 -0.2] web-post-br2))))]
+
+;;this is the end of the bottom-mount code
+
+
                      [(union
                        (hull (bottom-place right-wall-column 0 (translate [-1 0 1] (wall-cube-bottom 1/2)))
                              (bottom-place right-wall-column 0.017 (translate [-1 -1 1.15] (wall-cube-bottom 1)))
@@ -1014,13 +1270,13 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                        (thumb-place 1 -1 web-post-br))]
          thumb-back-wall [
                           (hull
-                           (thumb-place 1/2 thumb-back-y (translate [-0.2 thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place 1/2 thumb-back-y (translate [-0.2 (+ -0.445 thumb-back-offset) thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 1 1 web-post-tr)
-                           (thumb-place 3/2 thumb-back-y (translate [-0.2 thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place 3/2 thumb-back-y (translate [-0.2 (+ -0.41 thumb-back-offset) thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 1 1 web-post-tl))
                           (hull
                            (thumb-place (+ 5/2 0.05) thumb-back-y (translate [thumb-left-offset thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
-                           (thumb-place 3/2 thumb-back-y (translate [-0.2 thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place 3/2 thumb-back-y (translate [-0.41 (+ -0.445 thumb-back-offset) thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 1 1 web-post-tl)
                            (thumb-place 2 1 web-post-tl))
                           (hull
@@ -1028,8 +1284,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                            (key-place 0 3 web-post-tl)
                            (thumb-place 1 1 web-post-br)
                            (key-place 0 3 web-post-bl)
-                           (thumb-place 1/2 thumb-back-y (translate [-0.2 thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
-                           (thumb-place 1/2 thumb-back-y (translate [-3.2 (+ thumb-back-offset 0.07) thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place 1/2 thumb-back-y (translate [-0.2 (+ thumb-back-offset -0.405) (+ -1.6 thumb-ridge-height)] wall-half-cube-bottom-back))
+                           (thumb-place 1/2 thumb-back-y (translate [-3.2 (+ thumb-back-offset -0.385) (+ -1.6  thumb-ridge-height)] wall-half-cube-bottom-back))
                            (bottom-place left-wall-column 1.6666 (translate [left-offset 0 (- thumb-ridge-height 0.2)] wall-cube-bottom-front))
                            (key-place 0 3 web-post-tl)
                            (thumb-place 1 1 web-post-tr)
@@ -1039,26 +1295,78 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
          thumb-left-wall [(hull
                            (thumb-place thumb-left-wall-column thumb-back-y (translate [thumb-left-offset thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place thumb-left-wall-column 0 (translate [thumb-left-offset 0 thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place thumb-left-wall-column thumb-back-y (translate [(+ -5.1 thumb-left-offset) thumb-back-offset thumb-ridge-height] wall-cube-bottom-back))
+                           ;(thumb-place thumb-left-wall-column thumb-back-y (translate [(+ 1.68 thumb-left-offset) 23.625 (+ -5.625 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column 0 (translate [(+ -5.1 thumb-left-offset) 0 thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 2 1 web-post-tl)
                            (thumb-place 2 1 web-post-bl))
                           (hull
                            (thumb-place thumb-left-wall-column 0 (translate [thumb-left-offset 0 thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place thumb-left-wall-column 0 (translate [(+ -5.1 thumb-left-offset) 0 thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 2 0 web-post-tl)
                            (thumb-place 2 1 web-post-bl))
                           (hull
                            (thumb-place thumb-left-wall-column 0 (translate [thumb-left-offset 0 thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place thumb-left-wall-column -1 (translate [thumb-left-offset 0 thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place thumb-left-wall-column 0 (translate [(+ -5.1 thumb-left-offset) 0 thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place thumb-left-wall-column -1 (translate [(+ -5.1 thumb-left-offset) 0 thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 2 0 web-post-tl)
                            (thumb-place 2 0 web-post-bl))
                           (hull
                            (thumb-place thumb-left-wall-column -1 (translate [thumb-left-offset 0 thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place thumb-left-wall-column -1 (translate [(+ -5.1 thumb-left-offset) 0 thumb-ridge-height] wall-cube-bottom-back))
                            (thumb-place 2 -1 web-post-tl)
                            (thumb-place 2 0 web-post-bl))
                           (hull
                            (thumb-place thumb-left-wall-column -1 (translate [thumb-left-offset 0 thumb-ridge-height] wall-cube-bottom-back))
-                           (thumb-place thumb-left-wall-column (+ -1 0.07) (translate [thumb-left-offset 1 thumb-ridge-height] wall-cube-bottom-front))
+                           (thumb-place thumb-left-wall-column (+ -1 0.07) (translate [thumb-left-offset 0.55 thumb-ridge-height] wall-cube-bottom-front))
+                           (thumb-place thumb-left-wall-column -1 (translate [(+ -5.1 thumb-left-offset) 0 thumb-ridge-height] wall-cube-bottom-back))
+                           (thumb-place thumb-left-wall-column (+ -1 0.07) (translate [(+ -5.1 thumb-left-offset) 0.55 thumb-ridge-height] wall-cube-bottom-front))
                            (thumb-place 2 -1 web-post-tl)
-                           (thumb-place 2 -1 web-post-bl))]
+                           (thumb-place 2 -1 web-post-bl))
+                          (hull
+                           (thumb-place thumb-left-wall-column (+ -1 0.07) (translate [(+ 1.78 thumb-left-offset) -4.45 (+ -4.7 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ -1 0.07) (translate [(+ 3.455 thumb-left-offset) -4.45 (+ -7.5 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ -1 0.07) (translate [(+ 3.5 thumb-left-offset) -4.45 (+ -4.7 thumb-ridge-height)] web-post-bl2))
+
+                           (thumb-place thumb-left-wall-column (+ 0 0.07) (translate [(+ 2.38 thumb-left-offset) -2.55 (+ -4.7 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 0 0.07) (translate [(+ 3.455 thumb-left-offset) -0.44 (+ -8.365 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 0 0.07) (translate [(+ 3.5 thumb-left-offset) -2.55 (+ -4.7 thumb-ridge-height)] web-post-bl2))
+                          )
+                          (hull
+                           (thumb-place thumb-left-wall-column (+ 0 0.07) (translate [(+ 2.38 thumb-left-offset) -2.55 (+ -4.7 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 0 0.07) (translate [(+ 3.455 thumb-left-offset) -0.44 (+ -8.365 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 0 0.07) (translate [(+ 3.5 thumb-left-offset) -2.55 (+ -4.7 thumb-ridge-height)] web-post-bl2))
+
+                           (thumb-place thumb-left-wall-column (+ 1 0.07) (translate [(+ 2.58 thumb-left-offset) -5.25 (+ -3.91 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.07) (translate [(+ 3.455 thumb-left-offset) -8.45 (+ -6.5 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.07) (translate [(+ 3.5 thumb-left-offset) -5.25 (+ -3.91 thumb-ridge-height)] web-post-bl2))
+                          )
+                          (hull
+                           (thumb-place thumb-left-wall-column (+ 1 0.07) (translate [(+ 2.58 thumb-left-offset) -5.25 (+ -3.91 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.07) (translate [(+ 3.455 thumb-left-offset) -8.45 (+ -6.5 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.07) (translate [(+ 3.5 thumb-left-offset) -5.25 (+ -3.91 thumb-ridge-height)] web-post-bl2))
+
+                           (thumb-place thumb-left-wall-column (+ 1 0.257) (translate [(+ 2.58 thumb-left-offset) -6.55 (+ -4.035 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.257) (translate [(+ 3.455 thumb-left-offset) -4.7 (+ -7.79 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.257) (translate [(+ 3.5 thumb-left-offset) -6.55 (+ -4.035 thumb-ridge-height)] web-post-bl2))
+
+                          )
+                          (hull
+                           (thumb-place thumb-left-wall-column (+ 1 0.257) (translate [(+ 2.58 thumb-left-offset) -6.55 (+ -4.035 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.257) (translate [(+ 3.455 thumb-left-offset) -4.7 (+ -7.79 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 1 0.257) (translate [(+ 3.5 thumb-left-offset) -6.55 (+ -4.035 thumb-ridge-height)] web-post-bl2))
+
+                           (thumb-place thumb-left-wall-column (+ 2 0.057) (translate [(+ 1.68 thumb-left-offset) -1.5 (+ -5.16 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 2 0.057) (translate [(+ 3.455 thumb-left-offset) -2.45 (+ -8 thumb-ridge-height)] web-post-bl2))
+                           (thumb-place thumb-left-wall-column (+ 2 0.057) (translate [(+ 3.5 thumb-left-offset) -2.1 (+ -5.06 thumb-ridge-height)] web-post-bl2))
+
+                          
+                          )
+                          ]
+
+
+
          thumb-front-wall [(hull (thumb-place (+ 5/2 0.05) thumb-front-row (translate [thumb-left-offset thumb-front-offset thumb-ridge-height] wall-cube-bottom-front))
                                  (thumb-place (+ 3/2 0.05) thumb-front-row (translate [0 thumb-front-offset thumb-ridge-height] wall-cube-bottom-front))
                                  (thumb-place 2 -1 web-post-bl)
@@ -1150,15 +1458,235 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 (def stands (stands-at 9.8)) ; 3/8 = 9.6 1/2 = 12.7
 
-(def screw-hole (->> (cylinder 1.5 60)
-                     (translate [0 0 3/2])
+
+;; Defining Screw Holes
+
+(def screw-hole (->> (cylinder 1.5 16)
+                     (translate [0 2 -6])
                      (with-fn wall-sphere-n)))
 
 (def screw-holes
   (union
-   (key-place (+ 4 1/2) 1/2 screw-hole)
-   (key-place (+ 4 1/2) (+ 3 1/2) screw-hole)
-   (thumb-place 2 -1/2 screw-hole)))
+   (key-place (+ 5 7/10) 1/2 screw-hole)
+   (key-place (+ 5 7/10) (+ 3 1/2) screw-hole)
+   (thumb-place 2.645 -1.15 screw-hole)
+   (thumb-place 2.645 0.975 screw-hole))
+  )
+
+
+;; Defining Screw Mounting Posts (screw-tab attaches to plate. case-tab attaches to bottom case. screw-tab sits flush on top of case-tab.)
+
+(def screw-mount (->> (cylinder 2.5 2)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def screw-cube (->> (cube 2 3.4 plate-thickness)
+                     (translate [2 2 0])
+                     ))
+
+
+(def screw-cube2 (->> (cube 2.75 3.4 plate-thickness)
+                     (translate [2.75 2 0])
+                     ))
+
+(def screw-tab (difference (hull screw-mount screw-cube) screw-hole))
+
+(def screw-tab2 (difference (hull screw-mount screw-cube2) screw-hole))
+
+(def case-mount (->> (cylinder 2.5 6.45)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def case-cube (->> (cube 2 3.4 6.45)
+                     (translate [2 2 0])
+                     ))
+
+(def case-hole (->> (cylinder 1.5 6.45)
+                     (translate [0 2 -2])
+                     (with-fn wall-sphere-n)))
+
+(def case-tab (difference (hull case-mount case-cube) case-hole))
+
+;; the top-right-hand mounting post needs to be taller to align with the bottom case.
+
+(def case-mount-tr (->> (cylinder 2.5 7.95)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def case-cube-tr (->> (cube 2 3.4 7.95)
+                     (translate [2 2 0])
+                     ))
+
+(def case-hole-tr (->> (cylinder 1.5 7.95)
+                     (translate [0 2 -2])
+                     (with-fn wall-sphere-n)))
+
+(def case-tab-tr (difference (hull case-mount-tr case-cube-tr) case-hole-tr))
+
+;; the bottom-right-hand mounting post needs to be shorter to align with the bottom case. 
+
+(def case-mount-br (->> (cylinder 2.5 6.05)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def case-cube-br (->> (cube 2 3.4 6.05)
+                     (translate [2 2 0])
+                     ))
+
+(def case-hole-br (->> (cylinder 1.5 6.05)
+                     (translate [0 2 -2])
+                     (with-fn wall-sphere-n)))
+
+(def case-tab-br (difference (hull case-mount-br case-cube-br) case-hole-br))
+
+;; setting up top case <--> plate tolerances
+
+(def tol-screw-mount (->> (cylinder 2.6 2.1)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def tol-screw-cube (->> (cube 2.85 3.4 plate-thickness)
+                     (translate [2.75 2 0])
+                     ))
+
+(def tol-case-mount (->> (cylinder 2.6 6.5)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def tol-case-cube (->> (cube 2.1 3.4 6.5)
+                     (translate [2.1 2 0])
+                     ))
+
+(def tol-case-hole (->> (cylinder 1.5 6.45)
+                     (translate [0 2 -2])
+                     (with-fn wall-sphere-n)))
+
+(def tol-case-mount-tr (->> (cylinder 2.6 8)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def tol-case-cube-tr (->> (cube 2.1 3.4 7.95)
+                     (translate [2.1 2 0])
+                     ))
+
+(def tol-case-hole-tr (->> (cylinder 1.5 7.95)
+                     (translate [0 2 -2])
+                     (with-fn wall-sphere-n)))
+
+(def tol-case-mount-br (->> (cylinder 2.6 6.1)
+                    (translate [0 2 0])
+                    (with-fn wall-sphere-n)))
+
+(def tol-case-cube-br (->> (cube 2.1 3.4 6.1)
+                     (translate [2.1 2 0])
+                     ))
+
+(def tol-case-hole-br (->> (cylinder 1.5 6.05)
+                     (translate [0 2 -2])
+                     (with-fn wall-sphere-n)))
+
+(def tol-case-tab (difference (hull tol-case-mount tol-case-cube) tol-case-hole))
+
+(def tol-case-tab-tr (difference (hull tol-case-mount-tr tol-case-cube-tr) tol-case-hole-tr))
+
+(def tol-case-tab-br (difference (hull tol-case-mount-br tol-case-cube-br) tol-case-hole-br))
+
+(def tol-screw-tab (difference (hull tol-screw-mount tol-screw-cube) screw-hole))
+
+
+
+;; Placing the plate screw-tabs
+
+(def screw-tabs (union
+																				(thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	-0.63] screw-tab)))
+																				(thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0 -0.27] screw-tab)))
+																				(key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 -0.29] screw-tab)))
+																				(key-place 5.65 -0.4425 (rotate -3.255 [0.9 0.015 0] (translate [0 0 -0.305] (mirror [1 0 0] screw-tab))))
+																				(key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 -0.6775] (mirror [1 0 0] screw-tab))))
+																				)
+)
+
+(def screw-tabs2 (union
+																				(thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	-0.63] screw-tab2)))
+																				(thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0 -0.27] screw-tab2)))
+																				(key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 -0.29] screw-tab2)))
+																				(key-place 5.65 -0.44 (rotate -3.255 [0.9 0.015 0] (translate [0 0 -0.305] (mirror [1 0 0] screw-tab2))))
+																				(key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 -0.6775] (mirror [1 0 0] screw-tab2))))
+																				)
+)
+
+;; Placing the bottom case mounting posts
+
+(def screw-joints (union
+																				  (thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	3.6] case-tab)))
+																				  (thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0	3.96] case-tab)))					
+                      (key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 3.94] case-tab)))
+																				  (key-place 5.65 -0.44 (rotate -3.255 [0.9 0.015 0] (translate [0 0 4.68] (mirror [1 0 0] case-tab-tr))))
+																				  (key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 3.3525] (mirror [1 0 0] case-tab-br))))															  
+																		)
+)
+
+;; Attempt to create an alternate thumb-left-wall on the bottom case. Didn't work.
+
+;(def screw-wall (difference
+;																				  (hull 
+;                           (thumb-place 2.65 1.441 (rotate -3.256 [1 0 0] (translate [0 0	3.96] case-tab)))
+;																				       (thumb-place 2.65 0.741 (rotate -3.256 [1 0 0] (translate [0 0	3.96] case-tab)))
+;																				  )
+;																	(thumb-place 2.65 1.441 (rotate -3.256 [1 0 0] (translate [0 0	3.98] case-tab)))														  
+;																		)
+;)
+
+;; This is a cutout to prevent any of the cases from filling into the plate-to-bottom-case screw holes.
+
+(def hull-joints (union
+																				  (hull 
+																				  (thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	3.6] case-tab)))
+																		  		(thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	-0.63] screw-tab)))
+																		  		)
+																				  (hull																				  
+																				  (thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0	3.96] case-tab)))					
+  																				(thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0 -0.27] screw-tab)))
+  																				)
+															  			  (hull                      
+                      (key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 2.94] case-tab)))
+  																				(key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 -1.29] screw-tab)))
+  																				)																				  
+																				  (hull
+																				  (key-place 5.65 -0.44 (rotate -3.255 [0.9 0.015 0] (translate [0 0 4.68] (mirror [1 0 0] case-tab-tr))))
+																			  	(key-place 5.65 -0.44 (rotate -3.255 [0.9 0.015 0] (translate [0 0 -0.305] (mirror [1 0 0] screw-tab))))
+																			  	)																				  
+																				  (hull
+																				  (key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 3.3525] (mirror [1 0 0] case-tab-br))))
+																				  (key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 -0.6775] (mirror [1 0 0] screw-tab))))
+																				  )															  
+																		)
+)
+
+
+(def tol-hull-joints (union
+																				  (hull 
+																				  (thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	3.6] tol-case-tab)))
+																		  		(thumb-place 2.65 -1.24 (rotate 3.208 [1 0 0] (translate [0 0	-0.63] tol-screw-tab)))
+																		  		)
+																				  (hull																				  
+																				  (thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0	3.96] tol-case-tab)))					
+  																				(thumb-place 2.65 1.431 (rotate -3.256 [1 0 0] (translate [0 0 -0.27] tol-screw-tab)))
+  																				)
+															  			  (hull                      
+                      (key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 2.94] tol-case-tab)))
+  																				(key-place -0.65 -0.4325 (rotate -3.258 [0.9 0.015 0] (translate [0 0 -1.29] tol-screw-tab)))
+  																				)																				  
+																				  (hull
+																				  (key-place 5.65 -0.44 (rotate -3.255 [0.9 0.015 0] (translate [0 0 4.68] (mirror [1 0 0] tol-case-tab-tr))))
+																			  	(key-place 5.65 -0.44 (rotate -3.255 [0.9 0.015 0] (translate [0 0 -0.305] (mirror [1 0 0] tol-screw-tab))))
+																			  	)																				  
+																				  (hull
+																				  (key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 3.3525] (mirror [1 0 0] tol-case-tab-br))))
+																				  (key-place 5.645 4.2392 (rotate -3.075 [1.1 0.015 0] (translate [0 0 -0.6775] (mirror [1 0 0] tol-screw-tab))))
+																				  )															  
+																		)
+)
 
 (defn circuit-cover [width length height]
   (let [cover-sphere-radius 2
@@ -1257,15 +1785,15 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 (def teensy-support
   (difference
    (union
-    (->> (cube 5 5 9)
+    (->> (cube 5 5 6)
          (translate [0 0 -2])
          (key-place 1/2 3/2)
          (color [0 1 0]))
-    (hull (->> (cube 4 6 9)
+    (hull (->> (cube 3.675 6 7)
                (translate [0 0 -2])
                (key-place 1/2 2)
                (color [0 0 1]))
-          (->> (cube 4 5 (+ teensy-pcb-thickness 5))
+          (->> (cube 3.675 5 (+ teensy-pcb-thickness 5))
                (translate [0 (/ 30.5 -2) (+ (- teensy-offset-height)
                                             #_(/ (+ teensy-pcb-thickness 5) -2)
                                             )])
@@ -1302,11 +1830,6 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 (def tolerance 0.2)
 
-(defn offset-case-place [offset block]
-  (->> block
-       (translate [0 0 1])
-       (translate offset)))
-
 (def case-tolerance
   (let [place offset-case-place
         t tolerance
@@ -1329,8 +1852,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
           (place [t 0 -t] right-wall)
           (place [0 th -th] back-wall)
           (place [0 -th -th] back-wall)
-          (place [-45 50 54.3] (rotate (/ π 5.5) [1 0 0] (cube 10 10 10)))
-          (place [80 49 29.83] (rotate (/ π 5.5) [1 0 0] (cube 10 10 10)))
+          ;(place [-45 50 54.3] (rotate (/ π 5.5) [1 0 0] (cube 10 10 10)))
+          ;(place [80 49 29.83] (rotate (/ π 5.5) [1 0 0] (cube 10 10 10)))
           (place [-t -t -t] left-wall)
           (place [t 0 -t2] left-wall)
           (place [-t 0 0] left-inside-wall)
@@ -1565,7 +2088,9 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
     (if-not STANDS_SEPERATE dactyl-stands-right)
     (difference
       (union teensy-cover
-             (difference bottom-plate
+      							screw-joints
+      							;screw-tabs2
+      							(difference (difference bottom-plate hull-joints)
                          case-tolerance
                          (hull teensy-cover)
                           (if RESTS_SEPERATE rest-alignment)
@@ -1583,7 +2108,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
     (mirror [-1 0 0]
       (difference
         (union io-exp-cover
-              (difference bottom-plate
+        							screw-joints
+              (difference (difference bottom-plate hull-joints)
                           case-tolerance
                           (hull io-exp-cover)
                           (if RESTS_SEPERATE rest-alignment)
@@ -1594,32 +2120,74 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
         (if STANDS_SEPERATE (stands-alignment LEFT))))))
 
 (def dactyl-top-right
-  (offset-case-place [0 0 0]
+  ;(offset-case-place [0 0 0]
+    (union
+      (difference
+        (union ;key-holes
+               ;connectors
+               ;thumb
+               ;screw-tabs2
+               (difference new-case (union tol-hull-joints screw-tabs2 screw-joints))
+               ;teensy-support
+			   ;dactyl-keycaps-right
+			   )
+      trrs-hole-just-circle
+      screw-holes
+      ;screw-tabs
+      )))
+;)
+
+(def dactyl-top-right-plate
+  ;(offset-case-place [0 0 0]
     (union
       (difference
         (union key-holes
                connectors
                thumb
-               new-case
+               screw-tabs2
+               ;(translate [0 0 10] (difference new-case (union tol-hull-joints screw-tabs2 screw-joints screw-holes)))
                teensy-support
 			   ;dactyl-keycaps-right
 			   )
       trrs-hole-just-circle
-      screw-holes))))
+      screw-holes
+      ;screw-tabs
+      )))
+;)
 
 (def dactyl-top-left
   (mirror [-1 0 0]
-    (offset-case-place [0 0 0]
+      (union
+        (difference
+          (union ;key-holes
+                 ;connectors
+                 ;thumb
+                 ;screw-tabs2
+                 (difference new-case tol-hull-joints)
+          ;dactyl-keycaps-right
+				 )
+          trrs-hole-just-circle
+          screw-holes
+          ;screw-tabs
+          ))))
+
+(def dactyl-top-left-plate
+  (mirror [-1 0 0]
+    ;(offset-case-place [0 0 0]
       (union
         (difference
           (union key-holes
                  connectors
                  thumb
-                 new-case
-				 ;dactyl-keycaps-right
+                 screw-tabs2
+                 ;(difference new-case tol-hull-joints)
+          ;dactyl-keycaps-right
 				 )
           trrs-hole-just-circle
-          screw-holes)))))
+          screw-holes
+          ;screw-tabs
+          ))))
+
 
 ;;;;;;;;;;;;;
 ;; Outputs ;;
@@ -1628,39 +2196,103 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 (spit "things/dactyl-top-right.scad"
       (write-scad dactyl-top-right))
 
+(spit "things/dactyl-top-right-plate.scad"
+      (write-scad dactyl-top-right-plate))
 
 (spit "things/dactyl-bottom-right.scad"
       (write-scad dactyl-bottom-right))
 
-
 (spit "things/dactyl-top-left.scad"
       (write-scad dactyl-top-left))
 
+(spit "things/dactyl-top-left-plate.scad"
+      (write-scad dactyl-top-left-plate))
 
 (spit "things/dactyl-bottom-left.scad"
       (write-scad dactyl-bottom-left))
 
-
 ;(spit "things/dactyl-keycaps-left.scad"
     ;  (write-scad dactyl-keycaps-left))
-
 
 ;(spit "things/dactyl-keycaps-right.scad"
    ;   (write-scad dactyl-keycaps-right))
 
 ;(spit "things/dactyl-combined-left.scad"
-  ;    (write-scad (union dactyl-bottom-left dactyl-top-left)))
+      ;(write-scad (union dactyl-bottom-left dactyl-top-left)))
 	  
-;(spit "things/dactyl-combined-right.scad"
- ;     (write-scad (union dactyl-bottom-right dactyl-top-right)))
+(spit "things/dactyl-combined-right.scad"
+      (write-scad (rotate 90 [0 0 1] (union dactyl-bottom-right dactyl-top-right dactyl-top-right-plate ))))
 
 ;(spit "things/switch-hole.scad"
- ;     (write-scad single-plate))
+      ;(write-scad single-plate))
 
-;(spit "things/alps-holes.scad"
+;(spit "things/thumb-switch-hole.scad"
+	;					(write-scad double-plates))
+
+;(spit "things/key-plate.scad"
  ;     (write-scad (union connectors key-holes)))
 
-#_
+;(spit "things/key-holes.scad"
+ ;     (write-scad key-holes))
+
+;(spit "things/top-plate.scad"
+ ;     (write-scad (union connectors key-holes thumb screw-tabs)))
+
+(spit "things/bottom-mount.scad"
+      (write-scad (difference
+      												(union 
+								                (difference new-case tol-hull-joints)
+      																			(difference bottom-plate hull-joints) 
+      																			screw-joints 
+                  )
+                  trrs-hole-just-circle
+                  screw-holes
+      												)))
+
+;(spit "things/bottom-mount-left.scad"
+      
+      ;(write-scad (mirror [-1 0 0]
+       ;           (difference
+      		;										(union ;(difference new-case hull-joints)
+      			;										      connectors
+      				;															key-holes 
+      					;														thumb 
+      						;													screw-tabs 
+      							;												(difference bottom-plate hull-joints) 
+      								;											screw-joints 
+               ;   )
+                ;  trrs-hole-just-circle
+      											;	)
+      											;	)
+      ;)
+;)
+
+
+(spit "things/screw-tab.scad"
+      (write-scad screw-tab2))
+
+(spit "things/top-case.scad"
+      (write-scad 
+      (difference
+      (union
+      (difference new-case tol-hull-joints)
+      connectors
+      key-holes
+      screw-tabs2
+      screw-joints
+      thumb
+      ;(difference bottom-plate hull-joints)
+      )
+      screw-holes)
+      ))
+
+;(spit "things/case.scad"
+ ;     (write-scad (difference new-case (union hull-joints screw-tabs screw-joints))))
+
+;(spit "things/left-thumb-wall.scad"
+      ;(write-scad (difference thumb-left-wall screw-holes)))
+
+
 (if RESTS_SEPERATE
   (do
     (spit "things/dactyl-rest-left.scad"
@@ -1669,7 +2301,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
     (spit "things/dactyl-rest-right.scad"
           (write-scad dactyl-rest-right))))
 
-#_
+
 (if STANDS_SEPERATE
   (do
    (spit "things/dactyl-stands-left.scad"
