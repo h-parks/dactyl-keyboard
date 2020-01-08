@@ -14,8 +14,6 @@ Other changes include:
 * more column stagger.  
 * separation of top plate from top case.
 
-<img src="https://raw.githubusercontent.com/adereth/dactyl-cave/master/resources/glamourshot.png"/>
-
 ## Assembly
 
 You will need:
