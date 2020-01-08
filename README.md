@@ -1,6 +1,17 @@
 # The Dactyl Keyboard
 The Dactyl is a parameterized, split-hand, concave, columnar, ergonomic keyboard.
 
+This fork is an experiment in changing the mounting style of the dactyl. Originally designed as a tray-mount keyboard, this version creates a bottom-mount dactyl variant. 
+
+* [This guide from Thomas Baart can tell you more about keyboard mounting styles.](https://thomasbaart.nl/2019/04/07/cheat-sheet-custom-keyboard-mounting-styles/)
+
+Other changes include:
+
+* reversion to 1u outer keys from 1.5u keys.
+* widened bezels to accommodate mounting hardware.
+* increased column stagger to accommodate my own hands. 
+* separation of top plate from top case.
+
 <img src="https://raw.githubusercontent.com/adereth/dactyl-cave/master/resources/glamourshot.png"/>
 
 ## Assembly
