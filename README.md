@@ -19,6 +19,7 @@ Other changes include:
 You will need:
 
 * 70 Alps SKCM or SKCL keyboard switches
+* 4 Alps stabilizers (optional)
 * 66 1u keycaps
 * 4 2u keycaps
 * 9 M3 screws
