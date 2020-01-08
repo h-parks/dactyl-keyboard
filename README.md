@@ -7,14 +7,32 @@ This fork is an experiment in changing the mounting style of the dactyl. Origina
 
 Other changes include:
 
-* reversion to 1u outer keys from 1.5u keys.
-* widened bezels to accommodate mounting hardware.
-* increased column stagger to accommodate my own hands. 
+* thinner plate. 
+* snap-in Alps switch and stabilizer cutouts.
+* reversion to 1u outer keys from 1.5u keys in kennykaye fork.
+* wider bezels to accommodate mounting hardware.
+* more column stagger.  
 * separation of top plate from top case.
 
 <img src="https://raw.githubusercontent.com/adereth/dactyl-cave/master/resources/glamourshot.png"/>
 
 ## Assembly
+
+You will need:
+
+* 70 Alps SKCM or SKCL keyboard switches
+* 66 1u keycaps
+* 4 2u keycaps
+* 9 M3 screws
+* 9 heat-set m3 screw inserts
+* diodes
+* wires
+* microcontroller
+* soldering iron
+* solder
+* time, specifically
+* a lot of time
+* patience
 
 ### Generating a Design
 
