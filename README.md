@@ -40,6 +40,7 @@ You will need:
 * [Install the Clojure runtime](https://clojure.org)
 * [Install the Leiningen project manager](https://leiningen.org/)
 * [Install OpenSCAD](https://www.openscad.org/) /// [Recommended: 22-12-2019 builds from here](https://files.openscad.org/snapshots/) 
+* [Install Blender](https://blender.org/) or any other STL editor
 
 **Generating the design**
 * Run `lein repl`
