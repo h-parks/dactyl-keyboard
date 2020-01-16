@@ -8,7 +8,7 @@ This fork is an experiment in changing the mounting style of the dactyl. Origina
 Other changes include:
 
 * thinner plate. 
-* snap-in Alps switch and stabilizer cutouts.
+* snap-in Alps keyswitch and stabilizer cutouts.
 * reversion to 1u outer keys from 1.5u keys in kennykaye fork.
 * wider bezels to accommodate mounting hardware.
 * more column stagger.  
