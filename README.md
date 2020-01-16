@@ -13,6 +13,7 @@ Other changes include:
 * wider bezels to accommodate mounting hardware.
 * more column stagger.  
 * separation of top plate from top case.
+* post-processing of top case STL files in Blender
 
 ## Assembly
 
@@ -20,8 +21,8 @@ You will need:
 
 * 70 Alps SKCM or SKCL keyboard switches
 * 4 Alps stabilizers (optional)
-* 66 1u keycaps
-* 4 2u keycaps
+* 66 Alps-compatible 1u keycaps
+* 4 Alps-compatible 2u keycaps
 * 9 M3 screws
 * 9 heat-set m3 screw inserts
 * diodes
@@ -37,8 +38,8 @@ You will need:
 
 **Setting up the Clojure environment**
 * [Install the Clojure runtime](https://clojure.org)
-* [Install the Leiningen project manager](http://leiningen.org/)
-* [Install OpenSCAD](http://www.openscad.org/)
+* [Install the Leiningen project manager](https://leiningen.org/)
+* [Install OpenSCAD](https://www.openscad.org/) /// [Recommended: 22-12-2019 builds from here](https://files.openscad.org/snapshots/) 
 
 **Generating the design**
 * Run `lein repl`
@@ -47,6 +48,7 @@ You will need:
 * Use OpenSCAD to open a `.scad` file.
 * Make changes to design, repeat `load-file`, OpenSCAD will watch for changes and rerender.
 * When done, use OpenSCAD to export STL files
+* Smooth out rough edges with Blender or your STL editor of choice
 
 **Tips**
 * [Some other ways to evaluate the clojure design file](http://stackoverflow.com/a/28213489)
