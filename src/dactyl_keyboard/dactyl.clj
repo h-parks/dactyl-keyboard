@@ -7,16 +7,16 @@
 
 (def ^:const LEFT 1)
 (def ^:const RIGHT 2)
-(def ^:const FAST_RENDER false)
-(def ^:const RESTS_SEPERATE false)
-(def ^:const STANDS_SEPERATE false)
+(def ^:const FAST_RENDER false)         ;;set "true" if you need to make iterative changes not involving tolerances or wrist rests
+(def ^:const RESTS_SEPERATE false)      ;;set "true" to print wrist rests separately
+(def ^:const STANDS_SEPERATE false)     ;;set "true" to print case stands separately
 
 (defn offset-case-place [offset block]
   (->> block
        (translate [0 0 1])
        (translate offset)))
 
-(def additional-thumb-x-offset -1)  				;;additional offset for thumb cluster-0 by default
+(def additional-thumb-x-offset -4)  				;;additional offset for thumb cluster-0 by default. larger hands -> larger negative number
 
 ;;;;;;;;;;;;;;;;;
 ;; Switch Hole ;;
@@ -24,28 +24,29 @@
 
 (def plate-thickness 2) ; was 4
 
-(def keyswitch-height 13) ;; Was 14.1, then 14.25
-(def keyswitch-width 17.2)
+(def keyswitch-height 12.8) ;; Was 14.1, then 14.25 (this is for mx / mx clone switches)
+(def keyswitch-width 17.2) ;; would also be 14.1/14.25 for mx / mx clone switches
 (def keyswitch-notch-width 15.5)
 (def keyswitch-notch-height 1.1)
 
-(def key-height 7.4) ; was 12.7, then 10.4
+(def key-height 7.4) ; was 12.7, then 10.4 --- this variable affects both plate height and width. adjusting the mount-width and mount-height variables provides better control. 
 (def dsa-profile-key-height 7.4)
-(def key-z (+ plate-thickness 6)) ; 3 is pressed, 7 is released
+(def key-z (+ plate-thickness 7)) ; 3 is pressed, 7 is released
 
 (def mount-width (+ keyswitch-width 1.4))
-(def mount-height (+ keyswitch-height 4.8))
+(def mount-height (+ keyswitch-height 5.6))
 
 (def single-plate
   (let [top-wall (->> (cube (+ keyswitch-width 3) 2.4 plate-thickness)
                       (translate [0
-                                  (+ (/ 2.8 2) (/ keyswitch-height 2))
-                                  (/ plate-thickness 2)]))
-        left-wall (union (->> (cube 1.5 (+ keyswitch-height 4.8) plate-thickness)
+                                  (+ (/ 3 2) (/ keyswitch-height 2))
+                                  (/ plate-thickness 2)])
+                      )
+        left-wall (union (->> (cube 1.5 (+ keyswitch-height 5.4) plate-thickness)
                               (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
                                           0
                                           (/ plate-thickness 2)]))
-                         (->> (cube 1.5 (+ keyswitch-height 4.8) 1.1)
+                         (->> (cube 1.5 (+ keyswitch-height 5.4) 1.1)
                               (translate [(+ (/ 1.5 2) (/ keyswitch-notch-width 2))
                                           0
                                           (- plate-thickness
@@ -271,10 +272,10 @@
                 :when (or (not= column 0)
                           (not= row 3))]
             (triangle-hulls
-             (key-place column row web-post-bl)
-             (key-place column row web-post-br)
-             (key-place column (inc row) web-post-tl)
-             (key-place column (inc row) web-post-tr)))
+             (translate [-0.05 0 0](key-place column row web-post-bl))
+             (translate [0.05 0 0](key-place column row web-post-br))
+             (translate [-0.05 0 0](key-place column (inc row) web-post-tl))
+             (translate [0.05 0 0](key-place column (inc row) web-post-tr))))
 
           ;; Diagonal connections
           (for [column columns;(drop-last columns)
@@ -334,7 +335,7 @@
 
 (def double-plates
   (let [plate-height (/ (- sa-double-length mount-height) 2)
-        top-plate (->> (cube (+ 2.7 mount-height) plate-height web-thickness)
+        top-plate (->> (cube (+ 2 mount-height) plate-height web-thickness)
                        (translate [0 (/ (+ plate-height mount-height) 2)
                                    (- plate-thickness (/ web-thickness 2))]))
 
@@ -357,12 +358,16 @@
       left-side-plate (->> (cube 2.8 (* 3 plate-height ) web-thickness)
                       (translate [-9 4 (- plate-thickness (/ web-thickness 2))]))
 					right-side-plate (difference right-side-plate stabilizer-cutout)
+      top-side-plate (->> (cube (+ 2.4 mount-height) 0.75 web-thickness)
+                      (translate [0 (- mount-height 0.25) (- plate-thickness (/ web-thickness 2))])
+                      (color [1 0 0 1/2]))				
 left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
     (union top-plate
            (mirror [0 1 0] top-plate)
            right-side-plate
-           left-side-plate)))
+           left-side-plate
+           top-side-plate)))
 
 (def thumbcaps
   (union
@@ -414,7 +419,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
       ;;Connecting the double to the one above it
       (triangle-hulls (thumb-place 1 -1/2 thumb-tr)
-                      (thumb-place 1 -1/2 thumb-tl)
+                      (translate [-1 0 0] (thumb-place 1 -1/2 thumb-tl))
                       (thumb-place 1 1 web-post-br)
                       (thumb-place 1 1 web-post-bl))
 
@@ -425,16 +430,24 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                       (thumb-place 2 0 web-post-tr))
 
       ;;Connecting the two singles with the middle double
+      (hull (translate [0 0 0](thumb-place 1 -1/2 thumb-tl2))
+           (translate [0 0 0] (thumb-place 1 -1/2 thumb-bl2))
+            (translate [1 0 0](thumb-place 2 0 web-post-br))
+            (translate [1 0 0](thumb-place 2 -1 web-post-tr)))
       (hull (thumb-place 1 -1/2 thumb-tl2)
-            (thumb-place 1 -1/2 thumb-bl2)
-            (thumb-place 2 0 web-post-br)
-            (thumb-place 2 -1 web-post-tr))
-      (hull (thumb-place 1 -1/2 thumb-tl2)
+            (translate [0.5 0 -0.5] (thumb-place 1 -1/2 thumb-tl2))
             (thumb-place 2 0 web-post-tr)
-            (thumb-place 2 0 web-post-br))
+            (thumb-place 2 0 web-post-br)
+      						(translate [0.5 0 0] (thumb-place 2 0 web-post-br))
+)
+
+
       (hull (thumb-place 1 -1/2 thumb-bl2)
+            (translate [0.6 0 -0.6] (thumb-place 1 -1/2 thumb-bl2))
             (thumb-place 2 -1 web-post-tr)
-            (thumb-place 2 -1 web-post-br))
+            (thumb-place 2 -1 web-post-br)
+      						(translate [0.5 0 0] (thumb-place 2 0 web-post-br))
+      						)
 
       ;;Connecting the thumb to everything
       (triangle-hulls (thumb-place 0 -1/2 thumb-br)
@@ -464,7 +477,8 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
    thumb-connectors
    (thumb-layout single-plate)
    (thumb-place 0 -1/2 double-plates)
-   (thumb-place 1 -1/2 double-plates)))
+   (thumb-place 1 -1/2 double-plates)
+   ))
 
 ;;;;;;;;;;
 ;; Case ;;
@@ -490,10 +504,6 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
   (->> (cube 3 3 3)
        (translate coords)))
 
-(defn wall-thicc-cube-at [coords]
-  (->> (cube 9 3 3)
-       (translate coords)))
-
 (defn wall-half-cube-at [coords]
   (->> (cube 3 3 1.5)
        (translate coords)))
@@ -517,14 +527,6 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                     front-to-back-scale)
                    -6])) ; was -6, then 2
 
-(defn wall-cube-thicc-bottom [front-to-back-scale]
-  (wall-thicc-cube-at [0
-                   (scale-to-range
-                    (+ (/ mount-height -2) -3.5)
-                    (+ (/ mount-height 2) 5.0)
-                    front-to-back-scale)
-                   -6])) ; was -6, then 2
-
 (defn wall-cube-top [front-to-back-scale]
   (wall-cube-at [0
                    (scale-to-range
@@ -538,12 +540,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 (def wall-cube-bottom-front (wall-cube-bottom 0))
 (def wall-cube-top-front (wall-cube-top 0))
 
-
-(def wall-cube-thicc-bottom-back (wall-cube-thicc-bottom 1))
-(def wall-cube-thicc-bottom-front (wall-cube-thicc-bottom 0))
-
 (def wall-half-cube-bottom-back (wall-half-cube-bottom 1))
-
 
 (defn top-case-cover [place-fn sphere
                  x-start x-end
@@ -696,9 +693,10 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
            (key-place 0 0 web-post-bl)
            (key-place 0 1 web-post-bl))
      (hull (place left-wall-column 2 (translate [1 0 1] wall-cube-bottom-back))
-           (place left-wall-column 1.71 (translate [1 0 3.5] wall-cube-bottom-front))
+           (place left-wall-column 1.71 (translate [1 4 3.5] wall-cube-bottom-front))
            (key-place 0 1 web-post-bl)
-           (key-place 0 2 web-post-bl))
+           ;(key-place 0 2 web-post-bl)
+           )
 
      (hull (place left-wall-column 0 (translate [-2 -0.9 1.25] wall-cube-bottom-back))
            (place left-wall-column 1 (translate [-2 0 1] wall-cube-bottom-back))
@@ -709,9 +707,10 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
            (key-place 0 0 web-post-bl)
            (key-place 0 1 web-post-bl))
      (hull (place left-wall-column 2 (translate [-2 0 1] wall-cube-bottom-back))
-           (place left-wall-column 1.71 (translate [-2 0 3.5] wall-cube-bottom-front))
+           (place left-wall-column 1.71 (translate [-2 4 3.5] wall-cube-bottom-front))
            (key-place 0 1 web-post-bl)
-           (key-place 0 2 web-post-bl))
+           ;(key-place 0 2 web-post-bl)
+           )
 
      (hull (place left-wall-column 0 (translate [-3 -0.9 1.25] wall-cube-bottom-back))
            (place left-wall-column 1 (translate [-3 0 1] wall-cube-bottom-back))
@@ -722,22 +721,25 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
            (key-place 0 0 web-post-bl)
            (key-place 0 1 web-post-bl))
      (hull (place left-wall-column 2 (translate [-3 0 1] wall-cube-bottom-back))
-           (place left-wall-column 1.71 (translate [-3 0 3.5] wall-cube-bottom-front))
+           (place left-wall-column 1.71 (translate [-3 4 3.5] wall-cube-bottom-front))
            (key-place 0 1 web-post-bl)
-           (key-place 0 2 web-post-bl))
+           ;(key-place 0 2 web-post-bl)
+           )
 
      )))
 
 (def left-inside-wall
   (let [place case-place]
     (union
-     (hull (place left-wall-column 1.71 (translate [1 0 3] wall-cube-bottom-front))
-           (key-place 0 2 web-post-bl)
-           (key-place 0 3 web-post-tl))
-     (hull (place left-wall-column 1.71 (translate [2 0 3] wall-cube-bottom-front))
+     (hull (place left-wall-column 1.71 (translate [-1 5 3.3] wall-cube-bottom-front))
+     (place left-wall-column 1.71 (translate [1 5 3.3] wall-cube-bottom-front))
+           ;(key-place 0 2 web-post-bl)
+           ;(key-place 0 3 web-post-tl)
+           )
+     (hull (place left-wall-column 1.71 (translate [1 5 3.3] wall-cube-bottom-front))
            (thumb-place 1 1 web-post-tr)
-           (key-place 0 3 web-post-tl)
-           (place left-wall-column 1.71 (translate [1 0 3] wall-cube-bottom-front))
+           ;(key-place 0 2 web-post-bl)
+           (place left-wall-column 1.71 (translate [-1 5 3.3] wall-cube-bottom-front))
            (thumb-place 1 1 web-post-tr)
            (thumb-place 1/2 thumb-back-y (translate [0 -1.7 thumb-case-z] wall-cube-bottom-back))
            (thumb-place 1/2 thumb-back-y (translate [1 -1.7 (- thumb-case-z 2.9)] wall-cube-bottom-back))))))
@@ -1461,22 +1463,26 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 ;; Defining Screw Holes
 
-(def screw-hole (->> (cylinder 1.5 16)
+(def screw-hole (->> (cylinder 1.6 16)
+                     (translate [0 2 -6])
+                     (with-fn wall-sphere-n)))
+
+(def embed-hole (->> (cylinder 1.75 16)
                      (translate [0 2 -6])
                      (with-fn wall-sphere-n)))
 
 (def screw-holes
   (union
-   (key-place (+ 5 7/10) 1/2 screw-hole)
-   (key-place (+ 5 7/10) (+ 3 1/2) screw-hole)
-   (thumb-place 2.645 -1.15 screw-hole)
-   (thumb-place 2.645 0.975 screw-hole))
+   (key-place (+ 5 7/10) 1/2 embed-hole)
+   (key-place (+ 5 7/10) (+ 3 1/2) embed-hole)
+   (thumb-place 2.645 -1.15 embed-hole)
+   (thumb-place 2.645 0.975 embed-hole))
   )
 
 
 ;; Defining Screw Mounting Posts (screw-tab attaches to plate. case-tab attaches to bottom case. screw-tab sits flush on top of case-tab.)
 
-(def screw-mount (->> (cylinder 2.5 2)
+(def screw-mount (->> (cylinder 2.75 2)
                     (translate [0 2 0])
                     (with-fn wall-sphere-n)))
 
@@ -1493,7 +1499,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 (def screw-tab2 (difference (hull screw-mount screw-cube2) screw-hole))
 
-(def case-mount (->> (cylinder 2.5 6.45)
+(def case-mount (->> (cylinder 2.75 6.45)
                     (translate [0 2 0])
                     (with-fn wall-sphere-n)))
 
@@ -1501,7 +1507,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                      (translate [2 2 0])
                      ))
 
-(def case-hole (->> (cylinder 1.5 6.45)
+(def case-hole (->> (cylinder 1.75 6.45)
                      (translate [0 2 -2])
                      (with-fn wall-sphere-n)))
 
@@ -1509,7 +1515,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 ;; the top-right-hand mounting post needs to be taller to align with the bottom case.
 
-(def case-mount-tr (->> (cylinder 2.5 7.95)
+(def case-mount-tr (->> (cylinder 2.75 7.95)
                     (translate [0 2 0])
                     (with-fn wall-sphere-n)))
 
@@ -1517,7 +1523,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                      (translate [2 2 0])
                      ))
 
-(def case-hole-tr (->> (cylinder 1.5 7.95)
+(def case-hole-tr (->> (cylinder 1.75 7.95)
                      (translate [0 2 -2])
                      (with-fn wall-sphere-n)))
 
@@ -1525,7 +1531,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 
 ;; the bottom-right-hand mounting post needs to be shorter to align with the bottom case. 
 
-(def case-mount-br (->> (cylinder 2.5 6.05)
+(def case-mount-br (->> (cylinder 2.75 6.05)
                     (translate [0 2 0])
                     (with-fn wall-sphere-n)))
 
@@ -1533,7 +1539,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                      (translate [2 2 0])
                      ))
 
-(def case-hole-br (->> (cylinder 1.5 6.05)
+(def case-hole-br (->> (cylinder 1.75 6.05)
                      (translate [0 2 -2])
                      (with-fn wall-sphere-n)))
 
@@ -1546,10 +1552,10 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                     (with-fn wall-sphere-n)))
 
 (def tol-screw-cube (->> (cube 2.85 3.4 plate-thickness)
-                     (translate [2.75 2 0])
+                     (translate [2.85 2 0])
                      ))
 
-(def tol-case-mount (->> (cylinder 2.6 6.5)
+(def tol-case-mount (->> (cylinder 2.7 6.5)
                     (translate [0 2 0])
                     (with-fn wall-sphere-n)))
 
@@ -1868,7 +1874,24 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
           (place [-t 0 -t] thumb-inside-wall)
           (place [-t t -t] thumb-front-wall)
           (place [t 0 -t] thumb-front-wall)
-          (place [0 (* 2 -t) -t] thumb-front-wall))))))
+          (place [0 (* 2 -t) -t] thumb-front-wall)
+
+
+          )))))
+
+(def case-tolerance2
+  (let [place offset-case-place]
+    (union
+          ;(place [-45 50 50.3] (rotate (/ π 5.5) [1 0 0] (cube 10 10 7)))
+          (place [74 33 14.83] (rotate (/ π 5.5) [1 0 0] (cube 4 26 10)))
+          (place [-89.5 -24.5 55.83] (rotate (/ π 6.5) [1 0 0] (cube 2 4 4)))
+          (translate [0 -12.25 -1](mirror [0 1 0](place [74 33 14.83] (rotate (/ π 5.5) [1 0 0] (cube 4 26 10)))))
+										(place [-24.5 -57.5 31.33] (rotate (/ π 15) [1 0 1] (cube 4 21.5 6)))
+										(place [-79.5 -80 44.33] (rotate (/ π 24) [0 0 0] (cube 2 6 4)))
+										(place [35 -50 21.33] (rotate (/ π 24) [0 0 0] (cube 4 11 10)))
+										(place [13 -45 19.33] (rotate (/ π 24) [0 0 0] (cube 4 11 10)))
+										(place [-7.5 -45 25.33] (rotate (/ π 24) [0 0 0] (cube 4 11 10)))
+          )))
 
 
 ;;;;;;;;;;;;;;;;
@@ -2097,6 +2120,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                          teensy-cover
                          trrs-cutout
                          screw-holes
+                         screw-tabs2
                          floor))
       (if STANDS_SEPERATE (stands-alignment RIGHT))
       usb-cutout)))
@@ -2116,6 +2140,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                           io-exp-cover
                           trrs-cutout
                           screw-holes
+                          screw-tabs2
                           floor))
         (if STANDS_SEPERATE (stands-alignment LEFT))))))
 
@@ -2129,10 +2154,12 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                ;screw-tabs2
                (difference new-case (union tol-hull-joints screw-tabs2 screw-joints))
                ;teensy-support
+               ;case-tolerance2
 			   ;dactyl-keycaps-right
 			   )
       trrs-hole-just-circle
       screw-holes
+      case-tolerance2
       ;screw-tabs
       )))
 ;)
@@ -2155,6 +2182,19 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
       )))
 ;)
 
+(def dactyl-top-right-plate2
+  ;(offset-case-place [0 0 0]
+    (union
+     key-holes
+               connectors
+               thumb
+               ;(translate [0 0 10] (difference new-case (union tol-hull-joints screw-tabs2 screw-joints screw-holes)))
+			   ;dactyl-keycaps-right
+			   )
+      ;screw-tabs
+      )
+;)
+
 (def dactyl-top-left
   (mirror [-1 0 0]
       (union
@@ -2163,11 +2203,12 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                  ;connectors
                  ;thumb
                  ;screw-tabs2
-                 (difference new-case tol-hull-joints)
+                 (difference new-case (union tol-hull-joints screw-tabs2 screw-joints))
           ;dactyl-keycaps-right
 				 )
           trrs-hole-just-circle
           screw-holes
+          case-tolerance2
           ;screw-tabs
           ))))
 
@@ -2194,7 +2235,15 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 ;;;;;;;;;;;;;
 
 (spit "things/dactyl-top-right.scad"
-      (write-scad dactyl-top-right))
+      (write-scad        
+      (difference dactyl-top-right
+       dactyl-top-right-plate
+       (translate [0 0 -2]dactyl-top-right-plate2)
+       (translate [-1 0 -1.5]dactyl-top-right-plate2) 
+       (translate [0 0 -4]dactyl-top-right-plate2) 
+       (translate [0 0 -6]dactyl-top-right-plate2)
+       (translate [0 0 -8]dactyl-top-right-plate2)
+       )))
 
 (spit "things/dactyl-top-right-plate.scad"
       (write-scad dactyl-top-right-plate))
@@ -2203,7 +2252,15 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
       (write-scad dactyl-bottom-right))
 
 (spit "things/dactyl-top-left.scad"
-      (write-scad dactyl-top-left))
+      (write-scad (mirror [-1 0 0] 
+       (difference dactyl-top-right
+       dactyl-top-right-plate
+       (translate [0 0 -2]dactyl-top-right-plate2)
+       (translate [-1 0 -1.5]dactyl-top-right-plate2) 
+       (translate [0 0 -4]dactyl-top-right-plate2) 
+       (translate [0 0 -6]dactyl-top-right-plate2)
+       (translate [0 0 -8]dactyl-top-right-plate2)
+       ))))
 
 (spit "things/dactyl-top-left-plate.scad"
       (write-scad dactyl-top-left-plate))
@@ -2218,13 +2275,48 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
    ;   (write-scad dactyl-keycaps-right))
 
 ;(spit "things/dactyl-combined-left.scad"
-      ;(write-scad (union dactyl-bottom-left dactyl-top-left)))
+ ;     (write-scad (union dactyl-bottom-left dactyl-top-left dactyl-top-left-plate)))
 	  
-(spit "things/dactyl-combined-right.scad"
-      (write-scad (rotate 90 [0 0 1] (union dactyl-bottom-right dactyl-top-right dactyl-top-right-plate ))))
+;(spit "things/dactyl-combined-right.scad"
+ ;     (write-scad (union 
+  ;                   dactyl-bottom-right 
+   ;   (color [0 1 0 0.5] dactyl-top-right) 
+    ;                 (color [1 0 0 0.5] dactyl-top-right-plate)
+                     ;dactyl-keycaps-right 
+     ;                )))
 
 ;(spit "things/switch-hole.scad"
-      ;(write-scad single-plate))
+ ;     (write-scad single-plate))
+
+;(spit "things/plate-test.scad"
+ ;     (write-scad 
+  ;     (difference dactyl-top-right
+   ;    dactyl-top-right-plate
+    ;   (translate [0 0 -2]dactyl-top-right-plate2)
+     ;  (translate [-1 0 -1.5]dactyl-top-right-plate2) 
+      ; (translate [0 0 -4]dactyl-top-right-plate2) 
+       ;(translate [0 0 -6]dactyl-top-right-plate2)
+       ;(translate [0 0 -8]dactyl-top-right-plate2)
+       ;))) 
+
+;(spit "things/plate-test-left.scad"
+ ;     (write-scad (mirror [-1 0 0] 
+  ;     (difference dactyl-top-right
+   ;    dactyl-top-right-plate
+    ;   (translate [0 0 -2]dactyl-top-right-plate2)
+     ;  (translate [-1 0 -1.5]dactyl-top-right-plate2) 
+      ; (translate [0 0 -4]dactyl-top-right-plate2) 
+       ;(translate [0 0 -6]dactyl-top-right-plate2)
+       ;(translate [0 0 -8]dactyl-top-right-plate2)
+       
+       ;))))
+
+;(spit "things/plate-test2.scad"
+ ;     (write-scad 
+  ;      (intersection
+   ;     dactyl-top-right-plate
+    ;    dactyl-top-right
+     ;   )))
 
 ;(spit "things/thumb-switch-hole.scad"
 	;					(write-scad double-plates))
@@ -2236,18 +2328,23 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
  ;     (write-scad key-holes))
 
 ;(spit "things/top-plate.scad"
- ;     (write-scad (union connectors key-holes thumb screw-tabs)))
+ ;     (write-scad (union 
+  ;    connectors 
+   ;   key-holes thumb screw-tabs2 
+      ;(color [1 0 0 0.1] dactyl-top-right) 
+      ;dactyl-keycaps-right
+    ;  )))
 
-(spit "things/bottom-mount.scad"
-      (write-scad (difference
-      												(union 
-								                (difference new-case tol-hull-joints)
-      																			(difference bottom-plate hull-joints) 
-      																			screw-joints 
-                  )
-                  trrs-hole-just-circle
-                  screw-holes
-      												)))
+;(spit "things/bottom-mount.scad"
+ ;     (write-scad (difference
+  ;    												(union 
+			;					                (difference new-case tol-hull-joints)
+    ;  																			(difference bottom-plate hull-joints) 
+     ; 																			screw-joints 
+      ;            )
+       ;           trrs-hole-just-circle
+        ;          screw-holes
+      			;									)))
 
 ;(spit "things/bottom-mount-left.scad"
       
@@ -2268,23 +2365,23 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 ;)
 
 
-(spit "things/screw-tab.scad"
-      (write-scad screw-tab2))
+;(spit "things/screw-tab.scad"
+ ;     (write-scad screw-tab2))
 
-(spit "things/top-case.scad"
-      (write-scad 
-      (difference
-      (union
-      (difference new-case tol-hull-joints)
-      connectors
-      key-holes
-      screw-tabs2
-      screw-joints
-      thumb
+;(spit "things/top-case.scad"
+ ;     (write-scad 
+  ;    (difference
+   ;   (union
+    ;  (difference new-case tol-hull-joints)
+    ;  connectors
+    ;  key-holes
+    ;  screw-tabs2
+    ;  screw-joints
+    ;  thumb
       ;(difference bottom-plate hull-joints)
-      )
-      screw-holes)
-      ))
+    ;  )
+    ;  screw-holes)
+    ;  ))
 
 ;(spit "things/case.scad"
  ;     (write-scad (difference new-case (union hull-joints screw-tabs screw-joints))))
