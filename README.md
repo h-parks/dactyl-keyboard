@@ -12,6 +12,7 @@ Other changes include:
 * reversion to 1u outer keys from 1.5u keys in kennykaye fork.
 * wider bezels to accommodate mounting hardware.
 * more column stagger.  
+* deeper bottom plate to accommodate Alps switch depth.
 * separation of top plate from top case.
 * post-processing of top case STL files in Blender
 
