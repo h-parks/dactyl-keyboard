@@ -8,7 +8,7 @@
 (def ^:const LEFT 1)
 (def ^:const RIGHT 2)
 (def ^:const FAST_RENDER false)         ;;set "true" if you need to make iterative changes not involving tolerances or wrist rests
-(def ^:const RESTS_SEPERATE false)      ;;set "true" to print wrist rests separately
+(def ^:const RESTS_SEPERATE true)      ;;set "true" to print wrist rests separately
 (def ^:const STANDS_SEPERATE false)     ;;set "true" to print case stands separately
 
 (defn offset-case-place [offset block]
@@ -1230,15 +1230,15 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
                     )
          left-wall (let [place bottom-place]
                [
-                (hull (place left-wall-column 0 (translate [left-offset back-offset 1.2] wall-cube-bottom-back))
-                      (place left-wall-column 1 (translate [left-offset 1.5 1/2] wall-cube-bottom-back))
+                (hull (place left-wall-column 0 (translate [(+ left-offset -1.5) back-offset 1.2] wall-cube-bottom-back))
+                      (place left-wall-column 1 (translate [(+ left-offset -1.5) 1.5 1/2] wall-cube-bottom-back))
                       (key-place 0 0 web-post-tl)
                       (key-place 0 0 web-post-bl))
-                (hull (place left-wall-column 1 (translate [left-offset 0 1/2] wall-cube-bottom-back))
-                      (place left-wall-column 2 (translate [left-offset 1.5 -0.3] wall-cube-bottom-back))
+                (hull (place left-wall-column 1 (translate [(+ left-offset -1.5) 0 1/2] wall-cube-bottom-back))
+                      (place left-wall-column 2 (translate [(+ left-offset -1) 1.5 -0.3] wall-cube-bottom-back))
                       (key-place 0 0 web-post-bl)
                       (key-place 0 1 web-post-bl))
-                (hull (place left-wall-column 2 (translate [left-offset 0 -0.3] wall-cube-bottom-back))
+                (hull (place left-wall-column 2 (translate [(+ left-offset -1) 0 -0.3] wall-cube-bottom-back))
                       (place left-wall-column 1.6666  (translate [(- left-offset 1) 0 2] wall-cube-bottom-front))
                       (place left-wall-column 1.6666  (translate [(- left-offset 1) 0 0] wall-cube-bottom-front))
                       (key-place 0 1 web-post-bl)
@@ -2265,7 +2265,7 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
        )))
 
 (spit "things/dactyl-top-right-plate.scad"
-      (write-scad dactyl-top-right-plate))
+     (write-scad dactyl-top-right-plate))
 
 (spit "things/dactyl-bottom-right.scad"
       (write-scad (difference dactyl-bottom-right dactyl-top-right-plate)))
@@ -2282,10 +2282,10 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
        ))))
 
 (spit "things/dactyl-top-left-plate.scad"
-      (write-scad dactyl-top-left-plate))
+     (write-scad dactyl-top-left-plate))
 
 (spit "things/dactyl-bottom-left.scad"
-      (write-scad dactyl-bottom-left))
+      (write-scad (difference dactyl-bottom-left dactyl-top-left-plate)))
 
 ;(spit "things/dactyl-keycaps-left.scad"
     ;  (write-scad dactyl-keycaps-left))
@@ -2296,13 +2296,13 @@ left-side-plate (difference left-side-plate stabilizer-cutout)					]
 ;(spit "things/dactyl-combined-left.scad"
  ;     (write-scad (union dactyl-bottom-left dactyl-top-left dactyl-top-left-plate)))
 	  
-(spit "things/dactyl-combined-right.scad"
-      (write-scad (union 
-                     dactyl-bottom-right 
-                     dactyl-top-right 
-                     dactyl-top-right-plate
+;(spit "things/dactyl-combined-right.scad"
+ ;     (write-scad (union 
+  ;                   dactyl-bottom-right 
+   ;                  dactyl-top-right 
+    ;                 dactyl-top-right-plate
                      ;dactyl-keycaps-right 
-                     )))
+     ;                )))
 
 ;(spit "things/switch-hole.scad"
  ;     (write-scad single-plate))
