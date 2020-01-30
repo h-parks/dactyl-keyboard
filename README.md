@@ -3,6 +3,8 @@ The Dactyl is a parameterized, split-hand, concave, columnar, ergonomic keyboard
 
 This fork is an experiment in changing the mounting style of the dactyl. Originally designed as an integrated-plate/tray-mount keyboard, this version creates a bottom-mount dactyl variant. 
 
+![Bottom Mount](/resources/botmount.jpg)
+
 * [This guide from Thomas Baart can tell you more about keyboard mounting styles.](https://thomasbaart.nl/2019/04/07/cheat-sheet-custom-keyboard-mounting-styles/)
 
 Other changes include:
