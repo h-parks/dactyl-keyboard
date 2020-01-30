@@ -14,7 +14,7 @@ Other changes include:
 * more column stagger.  
 * more space in bottom case to accommodate Alps switch depth.
 * separation of top plate from top case.
-* post-processing of top case STL files in Blender
+* post-processing of top case STL files in Blender (still a work in progress, but case seems to fit)
 
 ## Assembly
 
@@ -24,11 +24,11 @@ You will need:
 * 4 Alps stabilizers (optional)
 * 66 Alps-compatible 1u keycaps
 * 4 Alps-compatible 2u keycaps
-* 9 M3 screws
-* 9 heat-set m3 screw inserts
+* 18 M3 screws
+* 18 heat-set m3 screw inserts
 * diodes
 * wires
-* microcontroller
+* 2 pro micro microcontrollers (ARM -can- be done via serial but it's still rather experimental in QMK)
 * soldering iron
 * solder
 * time, specifically
@@ -61,7 +61,7 @@ You will need:
 Pregenerated STL files are available in the [things/](things/) directory.
 
 ### Wiring
-Masks for the flexible PCBs I used are available for the [left](resources/pcb-left.svg) and [right](resources/pcb-right.svg) side.
+Masks for the flexible PCBs that aderath used are not recommended due to changes in dimension from his original design.
 
 A [very rough guide for the brave is here](guide/README.org#wiring) - It will be improved over time (**TODO**)!
 
